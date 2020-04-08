@@ -17,10 +17,19 @@ int main(int argc, char *argv[])
     size_t offset = 1;
     for (size_t i = 0; i < n; i += offset)
     {
+<<<<<<< HEAD
         for (size_t j = 0; j < m; j += offset)
         {
             matrix[i][j] = (rand() % 2) == 0 ? false : true;
         }
+=======
+        std::vector<bool> tmp(m);
+        std::for_each(tmp.begin(),
+                      tmp.end(),
+                      [&](bool x) { return (rand() % 2) == 0 ? false : true; });
+        matrix.push_back(tmp);
+        
+>>>>>>> 0cc57cb860d247858ae370391873e3d033f441e8
     }
 
     std::cout << matrix[1][1] << std::endl;
