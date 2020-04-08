@@ -1,0 +1,1 @@
+for i in {1..10}; do ./gol_seq.o 1000 1 25 25 4; done | grep -o -E '[0-9]+' > results/gol_seq.txt
