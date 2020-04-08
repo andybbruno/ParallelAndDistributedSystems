@@ -49,9 +49,9 @@ int main(int argc, char *argv[])
 
     std::vector<RANGE> ranges(nw); // vector to compute the ranges
     int delta{n / nw};
-    int mod{n % nw};
     std::vector<std::thread> tids;
-  
+
+    int mod{n % nw};
     for (int i = 0; i < nw; i++)
     {
       (i != 0 ? ranges[i].start = ranges[i - 1].end + 1 : ranges[i].start = 0);
