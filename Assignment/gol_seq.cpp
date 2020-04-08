@@ -12,18 +12,16 @@ int main(int argc, char *argv[])
 
     srand(seed);
 
-    std::vector<std::vector<bool>> matrix(n, std::vector<bool>(m));
+    std::vector<std::vector<bool>> matrix(n, std::vector<bool>(m, false));
 
     size_t offset = 1;
-    for (size_t i = 0; i < n; i += offset)
+    for (size_t i = 1; i < n - 1; i += offset)
     {
-        for (size_t j = 0; j < m; j += offset)
+        for (size_t j = 1; j < m - 1; j += offset)
         {
             matrix[i][j] = (rand() % 2) == 0 ? false : true;
         }
     }
-
-    std::cout << matrix[1][1] << std::endl;
 
     return 0;
 }
