@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
-#include <algorithm>
-#include "utils.hpp"
+#include "tools.hpp"
+#include "utimer.cpp"
 
 
 int main(int argc, char *argv[])
@@ -22,7 +22,9 @@ int main(int argc, char *argv[])
     // create_glider(matrix, 1, 1);
     // create_glider(matrix, 1, 10);
 
-    matrix::print(matrix);
+    // matrix::print(matrix);
+
+    utimer u("Sequential");
 
     for (size_t k = 0; k < niter; k++)
     {
@@ -57,8 +59,8 @@ int main(int argc, char *argv[])
         }
 
         matrix = matrix_new;
-        matrix::print(matrix);
-        utils::delay(100);
+        // matrix::print(matrix);
+        // utils::delay(30);
     }
 
     return 0;
