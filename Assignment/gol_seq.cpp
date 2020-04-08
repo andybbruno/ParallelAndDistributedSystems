@@ -21,6 +21,7 @@ int main(int argc, char *argv[])
                       tmp.end(),
                       [&](bool x) { return (rand() % 2) == 0 ? false : true; });
         matrix.push_back(tmp);
+        
     }
 
     return 0;
