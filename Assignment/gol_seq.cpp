@@ -2,6 +2,24 @@
 #include <vector>
 #include <algorithm>
 
+void print(std::vector<std::vector<bool>> const &vec)
+{
+    std::cout << std::string(vec[0].size(), '*') + "\t" << std::endl
+              << std::endl;
+
+    for (std::vector<bool> x : vec)
+    {
+        for (bool b : x)
+        {
+            std::cout << (b == true ? '*' : ' ') << "\t";
+        }
+        std::cout << std::endl;
+    }
+
+    std::cout << std::string(vec[0].size(), '*') << std::endl
+              << std::endl;
+}
+
 int main(int argc, char *argv[])
 {
     size_t niter = atoi(argv[1]);
@@ -23,5 +41,6 @@ int main(int argc, char *argv[])
         }
     }
 
+    print(matrix);
     return 0;
 }
