@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
             }
         }
 
-        matrix = matrix_new;
+        matrix = std::move(matrix_new);
         // matrix::print(matrix);
         // utils::delay(30);
     }
