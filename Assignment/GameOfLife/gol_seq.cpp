@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     // create_glider(matrix, 1, 1);
     // create_glider(matrix, 1, 10);
 
-    tools::print(matrix);
+    // tools::print(matrix);
 
     utimer u("Sequential");
 
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
         }
 
         matrix = std::move(matrix_new);
-        tools::print(matrix);
+        // tools::print(matrix);
         // tools::delay(30);
     }
 
