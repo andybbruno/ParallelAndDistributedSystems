@@ -3,7 +3,7 @@
 #include <chrono>
 #include <iostream>
 
-namespace utils
+namespace tools
 {
 void delay(int msecs)
 {
@@ -19,13 +19,10 @@ void delay(int msecs)
     }
     return;
 }
-} // namespace utils
 
-namespace game
+uint64_t neighbourhood(std::vector<std::vector<bool>> const &vec, uint64_t ix, uint64_t jx)
 {
-int neighbourhood(std::vector<std::vector<bool>> const &vec, uint ix, uint jx)
-{
-    uint counter = 0;
+    uint64_t counter = 0;
     bool alive = vec[ix][jx];
 
     for (size_t i = ix - 1; i < ix + 2; i++)
@@ -48,10 +45,7 @@ void create_glider(std::vector<std::vector<bool>> &vec, uint i, uint j)
     vec[3 + i][2 + j] = true;
     vec[3 + i][3 + j] = true;
 }
-} // namespace game
 
-namespace matrix
-{
 void randomize(std::vector<std::vector<bool>> &vec)
 {
     uint n = vec.size();
@@ -94,4 +88,4 @@ void print(std::vector<std::vector<bool>> const &vec)
     }
     std::cout << std::endl;
 }
-} // namespace matrix
+} // namespace tools

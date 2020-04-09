@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
-#include "tools.hpp"
-#include "utimer.cpp"
+#include "lib/tools.hpp"
+#include "lib/utimer.cpp"
 
 
 int main(int argc, char *argv[])
@@ -17,12 +17,12 @@ int main(int argc, char *argv[])
 
     std::vector<std::vector<bool>> matrix(n, std::vector<bool>(m, false));
 
-    matrix::randomize(matrix);
+    tools::randomize(matrix);
 
     // create_glider(matrix, 1, 1);
     // create_glider(matrix, 1, 10);
 
-    // matrix::print(matrix);
+    tools::print(matrix);
 
     utimer u("Sequential");
 
@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
         {
             for (size_t j = 1; j < m - 1; j++)
             {
-                int neig = game::neighbourhood(matrix, i, j);
+                int neig = tools::neighbourhood(matrix, i, j);
                 bool alive = matrix[i][j];
 
                 if (alive)
@@ -59,8 +59,8 @@ int main(int argc, char *argv[])
         }
 
         matrix = std::move(matrix_new);
-        // matrix::print(matrix);
-        // utils::delay(30);
+        tools::print(matrix);
+        // tools::delay(30);
     }
 
     return 0;
