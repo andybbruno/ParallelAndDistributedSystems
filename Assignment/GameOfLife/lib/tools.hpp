@@ -5,6 +5,13 @@
 
 namespace tools
 {
+
+struct Range
+{
+    uint16_t start;
+    uint16_t end;
+};
+
 void delay(int msecs)
 {
     // read current time
@@ -20,7 +27,7 @@ void delay(int msecs)
     return;
 }
 
-uint64_t neighbourhood(std::vector<std::vector<bool>> const &vec, uint64_t ix, uint64_t jx)
+inline uint64_t neighbourhood(std::vector<std::vector<bool>> const &vec, uint64_t ix, uint64_t jx)
 {
     uint64_t counter = 0;
     bool alive = vec[ix][jx];

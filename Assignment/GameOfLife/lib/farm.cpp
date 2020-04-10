@@ -2,27 +2,45 @@
 #include "farm.hpp"
 #include "tools.hpp"
 
-#define END = '0'
+#define END \
+    Cell { 65535, 65535, 0 }
 
 struct Cell
 {
     uint16_t i;
     uint16_t j;
     bool alive;
+
+    Cell(uint16_t a, uint16_t b, bool c) : i(a), j(b), alive(c){};
+
+    inline bool
+    operator==(const Cell &c)
+    {
+        return (i == c.i) & (j == c.j) & (alive == c.alive);
+    }
+
+    friend std::ostream &operator<<(std::ostream &out, const Cell &c)
+    {
+        auto status = c.alive ? "True" : "False";
+        out << "[" << c.i << " , " << c.j << "] : " << status;
+        return out;
+    }
 };
 
 struct Farm
 {
-    class Source : ISource<std::pair<uint64_t, uint64_t>>
+    class Emitter : IEmitter<Cell>
     {
     private:
         uint64_t rows;
         uint64_t cols;
         uint64_t max_elem;
 
-        uint64_t i = 1;
-        uint64_t j = 1;
+        uint16_t i = 1;
+        uint16_t j = 1;
         uint64_t current = 0;
+
+        size_t &it;
 
         void increment()
         {
@@ -32,36 +50,40 @@ struct Farm
         }
 
     public:
-        Source(uint64_t r, uint64_t c) : rows(r - 2), cols(c - 2)
+        Emitter(uint16_t r, uint16_t c, size_t &iters) : rows(r - 2), cols(c - 2), it(iters)
         {
             max_elem = rows * cols;
         }
 
-        std::pair<uint64_t, uint64_t> next()
+        Cell next()
         {
-            auto res = std::make_pair(i, j);
+            auto res = Cell{i, j, false};
             increment();
             return res;
         }
 
         bool hasNext()
         {
-            return current < max_elem;
+            return (current < max_elem) & (it > 0);
         }
     };
 
-    class Worker : IWorker<std::pair<uint16_t, uint16_t>, Cell>
+    class Worker : IWorker<Cell>
     {
     private:
         const std::vector<std::vector<bool>> &matrix;
+        std::vector<std::vector<bool>> &result;
 
     public:
-        Worker(std::vector<std::vector<bool>> const &mat) : matrix(mat) {}
+        Worker(std::vector<std::vector<bool>> const &mat, std::vector<std::vector<bool>> &res) : matrix(mat), result(res) {}
 
-        Cell compute(std::pair<uint16_t, uint16_t> c)
+        void compute(Cell c)
         {
-            uint16_t row_ = c.first;
-            uint16_t col_ = c.second;
+            uint16_t row_ = c.i;
+            uint16_t col_ = c.j;
+
+            if (c == END)
+                return;
 
             int neig = tools::neighbourhood(matrix, row_, col_);
             bool alive = matrix[row_][col_];
@@ -85,20 +107,7 @@ struct Farm
                 }
             }
 
-            return Cell{row_, col_, alive};
-        }
-    };
-
-    class Drain : IDrain<Cell>
-    {
-    private:
-        std::vector<std::vector<bool>> &matrix;
-
-    public:
-        Drain(std::vector<std::vector<bool>> &mat) : matrix(mat) {}
-        void process(Cell c)
-        {
-            matrix[c.i][c.j] = c.alive;
+            result[row_][col_] = alive;
         }
     };
 };

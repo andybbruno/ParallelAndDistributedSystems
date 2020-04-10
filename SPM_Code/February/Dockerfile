@@ -15,12 +15,14 @@ RUN apt update \
     && apt install -y autoconf \
     && apt install -y libreadline-dev \
     && apt install -y software-properties-common \
+    && apt install -y hwloc \
     && apt install -y htop
 ### make g++-9 default g++ compiler
 RUN update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 100
 ### install FastFlow
 RUN cd /usr/local/ && git clone https://github.com/fastflow/fastflow.git
 RUN cd /usr/local/include && ln -s ../fastflow/ff . 
+RUN cd /usr/local/fastflow/ff && yes | ./mapping_string.sh
 ### install GRPPi
 RUN cd /usr/local && git clone https://github.com/arcosuc3m/grppi.git
 RUN cd /usr/local/include && ln -s ../grppi/include/grppi 
@@ -36,6 +38,7 @@ RUN apt install -y libtbb-dev
 RUN apt install -y rsync
 ### fix user
 RUN useradd -ms /bin/bash spm2020user
+
 
 RUN sudo apt-get install -y libboost-all-dev
 
