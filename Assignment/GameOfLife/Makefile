@@ -1,7 +1,7 @@
 CXX			= g++ 
 CXXFLAGS 	= -std=c++17 
 OPTFLAGS	= -O3
-LDFLAGS 	= -pthread
+LDFLAGS 	= -pthread -Wall
 
 
 .PHONY: all clean cleanall

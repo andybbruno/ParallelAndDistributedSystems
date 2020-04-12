@@ -61,8 +61,8 @@ void randomize(std::vector<std::vector<bool>> &vec)
 }
 void print(std::vector<std::vector<bool>> const &vec)
 {
-    size_t rows = vec.size();
-    size_t cols = vec[0].size();
+    int rows = vec.size();
+    int cols = vec[0].size();
 
     std::cout << std::endl;
 

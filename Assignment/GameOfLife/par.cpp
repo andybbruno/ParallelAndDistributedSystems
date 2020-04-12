@@ -8,12 +8,12 @@
 
 int main(int argc, char *argv[])
 {
-    uint64_t niter = atoi(argv[1]);
-    size_t seed = atoi(argv[2]);
+    int niter = atoi(argv[1]);
+    int seed = atoi(argv[2]);
     (seed == 0) ? srand(time(NULL)) : srand(seed);
-    uint64_t n = atoi(argv[3]);
-    uint64_t m = atoi(argv[4]);
-    uint64_t nw = atoi(argv[5]);
+    int n = atoi(argv[3]);
+    int m = atoi(argv[4]);
+    int nw = atoi(argv[5]);
 
     std::vector<std::vector<bool>> table(n, std::vector<bool>(m, false));
     std::vector<std::vector<bool>> res_table(table);
