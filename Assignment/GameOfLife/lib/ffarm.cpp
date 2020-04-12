@@ -70,8 +70,8 @@ private:
 public:
     Worker(std::vector<std::vector<bool>> const &tab, std::vector<std::vector<bool>> &res) : table(tab), res_table(res)
     {
-        rows = table.size();
-        cols = table[0].size();
+        rows = table.size() - 2;
+        cols = table[0].size() - 2;
     }
 
     int compute(std::pair<int, int> job)
