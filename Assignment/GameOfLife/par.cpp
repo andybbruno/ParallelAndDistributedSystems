@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
     std::vector<std::vector<bool>> table(n, std::vector<bool>(m, false));
     std::vector<std::vector<bool>> res_table(table);
     tools::randomize(table);
-    tools::print(table);
+    // tools::print(table);
 
     FFarm::Emitter emitter(n, m, nw);
     FFarm::Worker worker(table, res_table);
@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
 
     collect_thr.join();
 
-    tools::print(res_table);
+    // tools::print(res_table);
 
     return 0;
 }

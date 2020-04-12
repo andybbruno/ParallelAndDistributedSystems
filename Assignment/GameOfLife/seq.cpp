@@ -12,7 +12,6 @@ int main(int argc, char *argv[])
 
     size_t n = atoi(argv[3]);
     size_t m = atoi(argv[4]);
-    size_t nw = atoi(argv[5]);
 
     std::vector<std::vector<bool>> matrix(n, std::vector<bool>(m, false));
 
@@ -21,7 +20,7 @@ int main(int argc, char *argv[])
     // create_glider(matrix, 1, 1);
     // create_glider(matrix, 1, 10);
 
-    tools::print(matrix);
+    // tools::print(matrix);
 
     utimer u("Sequential");
 
@@ -62,6 +61,6 @@ int main(int argc, char *argv[])
         // tools::delay(30);
     }
 
-    tools::print(matrix);
+    // tools::print(matrix);
     return 0;
 }
