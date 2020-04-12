@@ -18,14 +18,15 @@ int main(int argc, char *argv[])
     std::vector<std::vector<bool>> table(n, std::vector<bool>(m, false));
     std::vector<std::vector<bool>> res_table(table);
     tools::randomize(table);
+    tools::print(table);
 
-    FFarm::Emitter emitter(n, m);
+    FFarm::Emitter emitter(n, m, nw);
     FFarm::Worker worker(table, res_table);
     FFarm::Collector collector(table, res_table);
 
     syque<std::pair<int, int>> w_queue;
-    syque<bool> c_queue;
-    bool restart = false;
+    syque<int> c_queue;
+    syque<bool> f_queue;
 
     auto emit = [&](FFarm::Emitter e) {
         for (int i = 0; i < niter; i++)
@@ -35,13 +36,14 @@ int main(int argc, char *argv[])
                 auto job = e.next();
                 w_queue.push(job);
             }
-            e.restart();
+            bool res = f_queue.pop();
+            if (res == true)
+                e.restart();
         }
         for (int i = 0; i < nw; i++)
         {
             w_queue.push(EOS);
         }
-        return;
     };
 
     auto work = [&](FFarm::Worker w) {
@@ -50,10 +52,10 @@ int main(int argc, char *argv[])
             auto job = w_queue.pop();
             if (job == EOS)
             {
-                c_queue.push(false);
+                c_queue.push(EOC);
                 break;
             }
-            bool res = w.compute(job);
+            int res = w.compute(job);
             c_queue.push(res);
         }
     };
@@ -63,22 +65,23 @@ int main(int argc, char *argv[])
 
         while (true)
         {
-            bool res = c_queue.pop();
-            if (res == false && (--nworkers) == 0)
+            int res = c_queue.pop();
+            if (res == EOC && (--nworkers) == 0)
                 break;
-            c.collect(res);
+            bool val = c.collect(res);
+            if (val == true)
+                f_queue.push(val);
         }
     };
 
     utimer u("Parallel");
 
-    // auto emit_thr = new std::thread(emit, emitter);
     std::thread emit_thr(emit, emitter);
 
     std::vector<std::thread> tids;
     for (int i = 0; i < nw; i++)
     {
-        tids.push_back(std::thread(work, worker, i));
+        tids.push_back(std::thread(work, worker));
     }
 
     std::thread collect_thr(collect, collector);
@@ -91,6 +94,8 @@ int main(int argc, char *argv[])
     }
 
     collect_thr.join();
+
+    tools::print(res_table);
 
     return 0;
 }

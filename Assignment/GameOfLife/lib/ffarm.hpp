@@ -13,9 +13,9 @@ public:
   virtual OUT compute(IN x) = 0;
 };
 
-template <typename IN>
+template <typename IN, typename OUT>
 class ICollector
 {
 public:
-  virtual void collect(IN x) = 0;
+  virtual OUT collect(IN x) = 0;
 };

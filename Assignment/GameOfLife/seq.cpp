@@ -3,7 +3,6 @@
 #include "lib/tools.hpp"
 #include "lib/utimer.cpp"
 
-
 int main(int argc, char *argv[])
 {
     size_t niter = atoi(argv[1]);
@@ -22,7 +21,7 @@ int main(int argc, char *argv[])
     // create_glider(matrix, 1, 1);
     // create_glider(matrix, 1, 10);
 
-    // tools::print(matrix);
+    tools::print(matrix);
 
     utimer u("Sequential");
 
@@ -34,7 +33,7 @@ int main(int argc, char *argv[])
         {
             for (size_t j = 1; j < m - 1; j++)
             {
-                int neig = tools::neighbourhood(matrix, i, j);
+                int neig = tools::neighbours(matrix, i, j);
                 bool alive = matrix[i][j];
 
                 if (alive)
@@ -63,5 +62,6 @@ int main(int argc, char *argv[])
         // tools::delay(30);
     }
 
+    tools::print(matrix);
     return 0;
 }

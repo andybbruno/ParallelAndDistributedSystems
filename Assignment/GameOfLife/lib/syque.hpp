@@ -11,26 +11,24 @@ private:
     std::deque<T> d_queue;
 
 public:
+    syque(std::string s) { std::cout << "Created " << s << " queue " << std::endl; }
+    syque() {}
+
     void push(T const &value)
     {
         {
-            std::unique_lock<std::mutex> lock(d_mutex);
+            std::unique_lock<std::mutex> lock(this->d_mutex);
             d_queue.push_front(value);
         }
-        d_condition.notify_one();
+        this->d_condition.notify_one();
     }
 
     T pop()
     {
-        std::unique_lock<std::mutex> lock(d_mutex);
-        d_condition.wait(lock, [=] { return !d_queue.empty(); });
-        T rc(std::move(d_queue.back()));
-        d_queue.pop_back();
+        std::unique_lock<std::mutex> lock(this->d_mutex);
+        this->d_condition.wait(lock, [=] { return !this->d_queue.empty(); });
+        T rc(std::move(this->d_queue.back()));
+        this->d_queue.pop_back();
         return rc;
-    }
-
-    T front()
-    {
-        return d_queue.front();
     }
 };
