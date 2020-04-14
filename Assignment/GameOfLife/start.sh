@@ -1,5 +1,10 @@
 #!/bin/bash
 
+rm -f results/seq.csv
+rm -f results/par_active.csv
+rm -f results/par_passive.csv
+rm -f results/par_omp.csv
+
 iterations='100'
 seed='1'
 
@@ -9,7 +14,7 @@ make all
 echo ""
 echo ""
 echo "Start: Sequential"
-for i in 2 4 8 16 32 64 128 256 512 1024
+for i in 16 32 64 128 256
     do 
     echo "N = M =" $i
     for j in {1..10} 
@@ -19,8 +24,8 @@ done
 echo ""
 echo ""
 echo "Start: Parallel Active"
-for nw in 2 4 8 16 32 64 128 256
-    do for i in 2 4 8 16 32 64 128 256 512 1024
+for nw in 4 8 16 32 64 128 256
+    do for i in 16 32 64 128 256
         do 
         echo -e "NW =" $nw '\t' "N = M =" $i
         for j in {1..10} 
@@ -31,8 +36,8 @@ done
 echo ""
 echo ""
 echo "Start: Parallel Passive"
-for nw in 2 4 8 16 32 64 128 256
-    do for i in 2 4 8 16 32 64 128 256 512 1024
+for nw in 4 8 16 32 64 128 256
+    do for i in 16 32 64 128 256
         do 
         echo -e "NW =" $nw '\t' "N = M =" $i
         for j in {1..10} 
@@ -43,8 +48,8 @@ done
 echo ""
 echo ""
 echo "Start: Parallel OMP"
-for nw in 2 4 8 16 32 64 128 256
-    do for i in 2 4 8 16 32 64 128 256 512 1024
+for nw in 4 8 16 32 64 128 256
+    do for i in 16 32 64 128 256
         do 
         echo -e "NW =" $nw '\t' "N = M =" $i
         for j in {1..10} 
