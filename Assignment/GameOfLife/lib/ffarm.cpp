@@ -7,6 +7,9 @@
 
 #define EOC -1
 
+std::mutex tab_m;
+std::mutex res_tab_m;
+
 // Farm with Feedback
 namespace FFarm
 {
@@ -84,8 +87,9 @@ public:
             auto ix = (k / rows) + 1;
             auto jx = (k % cols) + 1;
             int neig = tools::neighbours(table, ix, jx);
+            res_tab_m.lock();
             bool alive = table[ix][jx];
-
+            res_tab_m.unlock();
             if (alive)
             {
                 if ((neig < 2) | (neig > 3))
@@ -104,7 +108,9 @@ public:
                     alive = true;
                 }
             }
+            res_tab_m.lock();
             res_table[ix][jx] = alive;
+            res_tab_m.unlock();
         }
         return (end - start) + 1;
     }
@@ -132,7 +138,12 @@ public:
         if (collected == size)
         {
             // std::swap(table, res_table);
+            
+            tab_m.lock();
+            res_tab_m.lock();
             table = res_table;
+            tab_m.unlock();
+            res_tab_m.unlock();
             collected = 0;
             return true;
         }
