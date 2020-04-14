@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     bool doprint = (argc > 6) ? true : false;
 
     std::vector<std::vector<bool>> table(n, std::vector<bool>(m, false));
-
+    std::vector<std::vector<bool>> res_table(table);
     tools::randomize(table);
 
     // create_glider(table, 1, 1);
@@ -30,7 +30,6 @@ int main(int argc, char *argv[])
 
     for (size_t k = 0; k < niter; k++)
     {
-        std::vector<std::vector<bool>> res_table(n, std::vector<bool>(m, false));
 
 #pragma omp parallel num_threads(nw)
         {
@@ -45,27 +44,26 @@ int main(int argc, char *argv[])
                     {
                         if ((neig < 2) | (neig > 3))
                         {
-                            res_table[i][j] = false;
+                            alive = false;
                         }
                         else if ((neig == 2) | (neig == 3))
                         {
-                            res_table[i][j] = true;
+                            alive = true;
                         }
                     }
                     else
                     {
                         if (neig == 3)
                         {
-                            res_table[i][j] = true;
+                            alive = true;
                         }
                     }
+                    #pragma omp flush(table, res_table)
+                    res_table[i][j] = alive;
                 }
             }
         }
-        table = std::move(res_table);
-
-        // tools::print(table);
-        // tools::delay(30);
+        table = res_table;
     }
 
     if (doprint)

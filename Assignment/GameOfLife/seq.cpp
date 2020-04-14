@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     bool doprint = (argc > 5) ? true : false;
 
     std::vector<std::vector<bool>> table(n, std::vector<bool>(m, false));
-
+    std::vector<std::vector<bool>> res_table(table);
     tools::randomize(table);
 
     // create_glider(table, 1, 1);
@@ -29,7 +29,6 @@ int main(int argc, char *argv[])
 
     for (size_t k = 0; k < niter; k++)
     {
-        std::vector<std::vector<bool>> res_table(n, std::vector<bool>(m, false));
 
         for (size_t i = 1; i < n - 1; i++)
         {
@@ -58,10 +57,7 @@ int main(int argc, char *argv[])
                 }
             }
         }
-
-        table = std::move(res_table);
-        // tools::print(table);
-        // tools::delay(30);
+        table = res_table;
     }
 
     if (doprint)
