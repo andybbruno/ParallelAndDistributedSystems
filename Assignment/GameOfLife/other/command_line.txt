@@ -1,1 +1,5 @@
 for i in {1..10}; do ./gol_seq.o 1000 1 25 25 4; done | grep -o -E '[0-9]+' > results/gol_seq.txt
+
+
+for k in{2,4,8,16,32,64,128,256,512,1024}; do ; done;
+for i in {1..10}; do ./par_active.o 1000 1 25 25 4; done | grep -o -E '[0-9]+' > results/gol_seq.txt
