@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
         }
     };
 
-    utimer u("Parallel");
+    utimer u(std::to_string(nw) + "," + std::to_string(n));
 
     std::thread emit_thr(emit, emitter);
 

@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
         tools::print(table);
     }
 
-    utimer u("Sequential");
+    utimer u(std::to_string(0) + "," + std::to_string(n));
 
     for (size_t k = 0; k < niter; k++)
     {

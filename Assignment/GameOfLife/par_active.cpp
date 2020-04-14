@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
         }
     };
 
-    utimer u(std::string(n) + ",");
+    utimer u(std::to_string(nw) + "," + std::to_string(n));
 
     std::thread emit_thr(emit, emitter);
 
