@@ -14,11 +14,16 @@ int main(int argc, char *argv[])
     int n = atoi(argv[3]);
     int m = atoi(argv[4]);
     int nw = atoi(argv[5]);
+    bool doprint = (argc > 6) ? true : false;
 
     std::vector<std::vector<bool>> table(n, std::vector<bool>(m, false));
     std::vector<std::vector<bool>> res_table(table);
     tools::randomize(table);
-    // tools::print(table);
+
+    if (doprint)
+    {
+        tools::print(table);
+    }
 
     FFarm::Emitter emitter(n, m, nw);
     FFarm::Worker worker(table, res_table);
@@ -95,7 +100,10 @@ int main(int argc, char *argv[])
 
     collect_thr.join();
 
-    // tools::print(res_table);
+    if (doprint)
+    {
+        tools::print(table);
+    }
 
     return 0;
 }

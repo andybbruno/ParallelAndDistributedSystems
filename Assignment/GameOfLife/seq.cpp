@@ -5,62 +5,68 @@
 
 int main(int argc, char *argv[])
 {
-    size_t niter = atoi(argv[1]);
-
-    size_t seed = atoi(argv[2]);
+    int niter = atoi(argv[1]);
+    int seed = atoi(argv[2]);
     (seed == 0) ? srand(time(NULL)) : srand(seed);
+    int n = atoi(argv[3]);
+    int m = atoi(argv[4]);
+    // int nw = atoi(argv[5]);
+    bool doprint = (argc > 5) ? true : false;
 
-    size_t n = atoi(argv[3]);
-    size_t m = atoi(argv[4]);
+    std::vector<std::vector<bool>> table(n, std::vector<bool>(m, false));
 
-    std::vector<std::vector<bool>> matrix(n, std::vector<bool>(m, false));
+    tools::randomize(table);
 
-    tools::randomize(matrix);
+    // create_glider(table, 1, 1);
+    // create_glider(table, 1, 10);
 
-    // create_glider(matrix, 1, 1);
-    // create_glider(matrix, 1, 10);
-
-    // tools::print(matrix);
+    if (doprint)
+    {
+        tools::print(table);
+    }
 
     utimer u("Sequential");
 
     for (size_t k = 0; k < niter; k++)
     {
-        std::vector<std::vector<bool>> matrix_new(n, std::vector<bool>(m, false));
+        std::vector<std::vector<bool>> res_table(n, std::vector<bool>(m, false));
 
         for (size_t i = 1; i < n - 1; i++)
         {
             for (size_t j = 1; j < m - 1; j++)
             {
-                int neig = tools::neighbours(matrix, i, j);
-                bool alive = matrix[i][j];
+                int neig = tools::neighbours(table, i, j);
+                bool alive = table[i][j];
 
                 if (alive)
                 {
                     if ((neig < 2) | (neig > 3))
                     {
-                        matrix_new[i][j] = false;
+                        res_table[i][j] = false;
                     }
                     else if ((neig == 2) | (neig == 3))
                     {
-                        matrix_new[i][j] = true;
+                        res_table[i][j] = true;
                     }
                 }
                 else
                 {
                     if (neig == 3)
                     {
-                        matrix_new[i][j] = true;
+                        res_table[i][j] = true;
                     }
                 }
             }
         }
 
-        matrix = std::move(matrix_new);
-        // tools::print(matrix);
+        table = std::move(res_table);
+        // tools::print(table);
         // tools::delay(30);
     }
 
-    // tools::print(matrix);
+    if (doprint)
+    {
+        tools::print(table);
+    }
     return 0;
 }
