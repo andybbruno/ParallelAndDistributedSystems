@@ -16,8 +16,8 @@ int main(int argc, char *argv[])
     int nw = atoi(argv[5]);
     bool doprint = (argc > 6) ? true : false;
 
-    std::vector<std::vector<bool>> table(n, std::vector<bool>(m, false));
-    std::vector<std::vector<bool>> res_table(table);
+    Table table(n, Row(m, OFF));
+    Table res_table(table);
     tools::randomize(table);
 
     if (doprint)
@@ -25,13 +25,13 @@ int main(int argc, char *argv[])
         tools::print(table);
     }
 
-    FFarm::Emitter emitter(n, m, nw);
-    FFarm::Worker worker(table, res_table);
+    FFarm::Emitter emitter(table);
+    FFarm::Worker worker;
     FFarm::Collector collector(table, res_table);
 
-    syque<std::pair<int, int>> w_queue;
-    syque<int> c_queue;
-    syque<bool> f_queue;
+    syque<Chunk> ew_queue;
+    syque<RowID> wc_queue;
+    syque<bool> ce_queue;
 
     auto emit = [&](FFarm::Emitter e) {
         for (int i = 0; i < niter; i++)
@@ -39,29 +39,29 @@ int main(int argc, char *argv[])
             while (e.hasNext())
             {
                 auto job = e.next();
-                w_queue.push(job);
+                ew_queue.push(job);
             }
-            bool res = f_queue.pop();
+            bool res = ce_queue.pop();
             if (res == true)
                 e.restart();
         }
         for (int i = 0; i < nw; i++)
         {
-            w_queue.push(EOS);
+            ew_queue.push(EOS);
         }
     };
 
     auto work = [&](FFarm::Worker w) {
         while (true)
         {
-            auto job = w_queue.pop();
+            auto job = ew_queue.pop();
             if (job == EOS)
             {
-                c_queue.push(EOC);
+                wc_queue.push(EOC);
                 break;
             }
-            int res = w.compute(job);
-            c_queue.push(res);
+            auto res = w.compute(job);
+            wc_queue.push(res);
         }
     };
 
@@ -70,12 +70,17 @@ int main(int argc, char *argv[])
 
         while (true)
         {
-            int res = c_queue.pop();
+            auto res = wc_queue.pop();
             if (res == EOC && (--nworkers) == 0)
                 break;
-            bool val = c.collect(res);
-            if (val == true)
-                f_queue.push(val);
+            if (res != EOC)
+            {
+                bool val = c.collect(res);
+                if (val == true)
+                {
+                    ce_queue.push(val);
+                }
+            }
         }
     };
 

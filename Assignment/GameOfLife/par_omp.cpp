@@ -14,8 +14,8 @@ int main(int argc, char *argv[])
     int nw = atoi(argv[5]);
     bool doprint = (argc > 6) ? true : false;
 
-    std::vector<std::vector<bool>> table(n, std::vector<bool>(m, false));
-    std::vector<std::vector<bool>> res_table(table);
+    Table table(n, Row(m, OFF));
+    Table res_table(table);
     tools::randomize(table);
 
     // create_glider(table, 1, 1);

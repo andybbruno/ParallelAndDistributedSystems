@@ -10,12 +10,12 @@ template <typename IN, typename OUT>
 class IWorker
 {
 public:
-  virtual OUT compute(IN x) = 0;
+  virtual OUT compute(IN const &x) = 0;
 };
 
 template <typename IN, typename OUT>
 class ICollector
 {
 public:
-  virtual OUT collect(IN x) = 0;
+  virtual OUT collect(IN const &x) = 0;
 };

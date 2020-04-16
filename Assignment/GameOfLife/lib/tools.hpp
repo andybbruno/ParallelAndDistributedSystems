@@ -3,50 +3,78 @@
 #include <chrono>
 #include <iostream>
 
+#define ON 1
+#define OFF 0
+
+typedef std::vector<int16_t> Row;
+typedef std::vector<std::vector<int16_t>> Table;
+typedef std::pair<int16_t, Row> RowID;
+
+struct Chunk
+{
+    int16_t id_curr;
+    Row prev;
+    Row curr;
+    Row next;
+
+    Chunk()
+    {
+        id_curr = 0;
+        prev = Row(1, 0);
+        curr = Row(1, 0);
+        next = Row(1, 0);
+    }
+
+    Chunk(int16_t i)
+    {
+        id_curr = i;
+        prev = Row(1, i);
+        curr = Row(1, i);
+        next = Row(1, i);
+    }
+
+    Chunk(int16_t i, Row const &a, Row const &b, Row const &c) : id_curr(i), prev(a), curr(b), next(c) {}
+
+    inline bool operator==(const Chunk &rhs)
+    {
+        return (id_curr == rhs.id_curr) & (prev == rhs.prev) & (curr == rhs.curr) & (next == rhs.next);
+    }
+};
+
+#define EOC \
+    RowID { -1, Row(1) }
+
+#define EOS \
+    Chunk { -1 }
+
 namespace tools
 {
-void delay(int msecs)
+inline uint8_t neighbours(Table const &vec, uint64_t ix, uint64_t jx)
 {
-    // read current time
-    auto start = std::chrono::high_resolution_clock::now();
-    auto end = false;
-    while (!end)
-    {
-        auto elapsed = std::chrono::high_resolution_clock::now() - start;
-        auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
-        if (msec > msecs)
-            end = true;
-    }
-    return;
-}
-
-inline uint64_t neighbours(std::vector<std::vector<bool>> const &vec, uint64_t ix, uint64_t jx)
-{
-    uint64_t counter = 0;
-    bool alive = vec[ix][jx];
-
+    auto alive = vec[ix][jx];
+    uint8_t counter = 0;
     for (size_t i = ix - 1; i < ix + 2; i++)
     {
         for (size_t j = jx - 1; j < jx + 2; j++)
         {
-            if (vec[i][j] == true)
-                counter++;
+            counter += vec[i][j];
         }
     }
-    return alive ? --counter : counter;
+
+    return (alive == 1) ? --counter : counter;
 }
 
-void create_glider(std::vector<std::vector<bool>> &vec, uint i, uint j)
+void create_glider(Table &vec, uint i, uint j)
 {
     // Glider 1
-    vec[1 + i][3 + j] = true;
-    vec[2 + i][1 + j] = true;
-    vec[2 + i][3 + j] = true;
-    vec[3 + i][2 + j] = true;
-    vec[3 + i][3 + j] = true;
+    vec[1 + i][3 + j] = 1;
+    vec[2 + i][1 + j] = 1;
+    vec[2 + i][3 + j] = 1;
+    vec[3 + i][2 + j] = 1;
+    vec[3 + i][3 + j] = 1;
 }
 
-void randomize(std::vector<std::vector<bool>> &vec)
+void randomize(Table &vec)
 {
     uint n = vec.size();
     uint m = vec[0].size();
@@ -55,11 +83,11 @@ void randomize(std::vector<std::vector<bool>> &vec)
     {
         for (size_t j = 1; j < m - 1; j++)
         {
-            vec[i][j] = (rand() % 2) == 0 ? false : true;
+            vec[i][j] = rand() % 2;
         }
     }
 }
-void print(std::vector<std::vector<bool>> const &vec)
+void print(Table const &vec)
 {
     int rows = vec.size();
     int cols = vec[0].size();
@@ -73,15 +101,15 @@ void print(std::vector<std::vector<bool>> const &vec)
             bool b = vec[i][j];
             if (j == 0)
             {
-                std::cout << (b == true ? "●" : " ") << "|";
+                std::cout << (b == 1 ? "●" : " ") << "|";
             }
             else if (j == cols - 1)
             {
-                std::cout << (b == true ? "●" : " ");
+                std::cout << (b == 1 ? "●" : " ");
             }
             else
             {
-                std::cout << (b == true ? "●" : " ") << "|";
+                std::cout << (b == 1 ? "●" : " ") << "|";
             }
         }
         std::cout << std::endl;

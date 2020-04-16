@@ -16,8 +16,8 @@ int main(int argc, char *argv[])
     int nw = atoi(argv[5]);
     bool doprint = (argc > 6) ? true : false;
 
-    std::vector<std::vector<bool>> table(n, std::vector<bool>(m, false));
-    std::vector<std::vector<bool>> res_table(table);
+    Table table(n, Row(m, OFF));
+    Table res_table(table);
     tools::randomize(table);
 
     if (doprint)
@@ -25,13 +25,13 @@ int main(int argc, char *argv[])
         tools::print(table);
     }
 
-    FFarm::Emitter emitter(n, m, nw);
-    FFarm::Worker worker(table, res_table);
+    FFarm::Emitter emitter(table);
+    FFarm::Worker worker;
     FFarm::Collector collector(table, res_table);
 
-    std::vector<buffer<std::pair<int, int>>> w_buff(nw);
-    std::vector<buffer<int>> c_buff(nw);
-    buffer<bool> f_buff;
+    std::vector<buffer<Chunk>> ew_buff(nw); // emitter to worker buffer
+    std::vector<buffer<RowID>> wc_buff(nw); // worker to collector buffer
+    buffer<bool> ce_buff;                   // collector to emitter buffer
 
     auto emit = [&](FFarm::Emitter e) {
         for (int i = 0; i < niter; i++)
@@ -40,30 +40,30 @@ int main(int argc, char *argv[])
             while (e.hasNext())
             {
                 auto job = e.next();
-                w_buff[turn].send(job);
+                ew_buff[turn].send(job);
                 turn = (++turn) % nw;
             }
-            bool res = f_buff.receive();
+            bool res = ce_buff.receive();
             if (res == true)
                 e.restart();
         }
         for (int i = 0; i < nw; i++)
         {
-            w_buff[i].send(EOS);
+            ew_buff[i].send(EOS);
         }
     };
 
     auto work = [&](FFarm::Worker w, int wid) {
         while (true)
         {
-            auto job = w_buff[wid].receive();
+            auto job = ew_buff[wid].receive();
             if (job == EOS)
             {
-                c_buff[wid].send(EOC);
+                wc_buff[wid].send(EOC);
                 break;
             }
-            int res = w.compute(job);
-            c_buff[wid].send(res);
+            auto res = w.compute(job);
+            wc_buff[wid].send(res);
         }
     };
 
@@ -72,17 +72,24 @@ int main(int argc, char *argv[])
         int turn = 0;
         while (true)
         {
-            if (c_buff[turn].empty())
+            if (wc_buff[turn].empty())
             {
                 turn = (++turn) % nw;
                 continue;
             }
-            int res = c_buff[turn].receive();
+            auto res = wc_buff[turn].receive();
             if (res == EOC && (--nworkers) == 0)
+            {
                 break;
-            bool val = c.collect(res);
-            if (val == true)
-                f_buff.send(val);
+            }
+            if (res != EOC)
+            {
+                bool val = c.collect(res);
+                if (val == true)
+            {
+                ce_buff.send(val);
+            }
+            }
         }
     };
 

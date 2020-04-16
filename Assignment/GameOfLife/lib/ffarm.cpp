@@ -3,146 +3,144 @@
 #include "ffarm.hpp"
 #include "tools.hpp"
 
-#define EOS \
-    std::pair { -1, -1 }
-
-#define EOC -1
-
 std::mutex tab_m;
 std::mutex res_tab_m;
 
 // Farm with Feedback
 namespace FFarm
 {
-class Emitter : IEmitter<std::pair<int, int>>
+class Emitter : IEmitter<Chunk>
 {
 private:
-    // uint64_t i = 1;
-    // uint64_t j = 1;
-    uint64_t current = 0;
-    uint64_t a = 0;
-    uint64_t b = 0;
-    uint64_t delta;
-    uint64_t mod;
-    uint64_t rows = 0;
-    uint64_t cols = 0;
-    uint64_t size = 0;
-    uint64_t nw;
+    uint8_t curr = 1;
+    uint8_t size = 0;
+    Table &table;
 
 public:
-    Emitter(uint64_t r, uint64_t c, uint64_t nw) : rows(r - 2), cols(c - 2), nw(nw)
+    Emitter(Table &t) : table(t)
     {
-        size = rows * cols;
-        delta = (size / nw) - 1;
-        mod = size % nw;
+        size = table.size() - 2;
     };
 
-    std::pair<int, int> next()
+    Chunk next()
     {
-        a = (current != 0 ? b + 1 : 0);
-        b = (mod > 0 ? a + delta + 1 : a + delta);
-        if (mod > 0)
-            --mod;
-
-        current = b;
-
-        return std::pair<int, int>{a, b};
+        Chunk ck{curr, table[curr - 1], table[curr], table[curr + 1]};
+        curr++;
+        return ck;
     }
 
     bool hasNext()
     {
-        return current < (size - 1);
+        return curr <= size;
     }
 
     void restart()
     {
-        a = 0;
-        b = 0;
-        current = 0;
-        mod = size % nw;
+        curr = 1;
     }
 };
 
-class Worker : IWorker<std::pair<int, int>, int>
+class Worker : IWorker<Chunk, RowID>
 {
-private:
-    const std::vector<std::vector<bool>> &table;
-    std::vector<std::vector<bool>> &res_table;
-    uint64_t rows = 0;
-    uint64_t cols = 0;
-
 public:
-    Worker(std::vector<std::vector<bool>> const &tab, std::vector<std::vector<bool>> &res) : table(tab), res_table(res)
+    RowID compute(Chunk const &c)
     {
-        rows = table.size() - 2;
-        cols = table[0].size() - 2;
-    }
+        auto curr_idx = c.id_curr;
+        auto prev = c.prev;
+        auto curr = c.curr;
+        auto next = c.next;
 
-    int compute(std::pair<int, int> job)
-    {
-        int start = job.first;
-        int end = job.second;
+        auto size = curr.size();
+        Row partialSum(size, 0);
+        Row neigh(size, 0);
+        Row res(size, 0);
 
-        for (int k = start; k <= end; k++)
+        for (size_t i = 1; i < size - 1; i++)
         {
-            auto ix = (k / rows) + 1;
-            auto jx = (k % cols) + 1;
-            int neig = tools::neighbours(table, ix, jx);
-            res_tab_m.lock();
-            bool alive = table[ix][jx];
-            res_tab_m.unlock();
-            if (alive)
+            partialSum[i] = curr[i] + prev[i] + next[i];
+        }
+
+        for (size_t i = 1; i < size - 1; i++)
+        {
+            neigh[i] = partialSum[i - 1] + partialSum[i] + partialSum[i + 1];
+        }
+
+        for (size_t i = 1; i < size - 1; i++)
+        {
+            // if (curr[i] == ON)
+            // {
+            //     neigh[i] -= 1;
+            // }
+            neigh[i] -= curr[i];
+        }
+
+        for (size_t i = 1; i < size - 1; i++)
+        {
+            // if ((curr[i] == ON) & ((neigh[i] < 2) | (neigh[i] > 3)))
+            // {
+            //     res[i] = OFF;
+            // }
+            // else if ((curr[i] == OFF) & (neigh[i] == 3))
+            // {
+            //     res[i] = ON;
+            // }
+            auto neig = neigh[i];
+            auto alive = curr[i];
+
+            if (alive == ON)
             {
                 if ((neig < 2) | (neig > 3))
                 {
-                    alive = false;
+                    res[i] = OFF;
                 }
                 else if ((neig == 2) | (neig == 3))
                 {
-                    alive = true;
+                    res[i] = ON;
                 }
             }
             else
             {
                 if (neig == 3)
                 {
-                    alive = true;
+                    res[i] = ON;
                 }
             }
-            res_tab_m.lock();
-            res_table[ix][jx] = alive;
-            res_tab_m.unlock();
         }
-        return (end - start) + 1;
+        return RowID{curr_idx, res};
     }
 };
 
-class Collector : ICollector<int, bool>
+class Collector : ICollector<RowID, bool>
 {
 private:
-    uint64_t size = 0;
-    uint64_t collected = 0;
-    std::vector<std::vector<bool>> &table;
-    std::vector<std::vector<bool>> &res_table;
+    uint8_t size = 0;
+    uint8_t collected = 0;
+    Table &table;
+    Table &res_table;
 
 public:
-    Collector(std::vector<std::vector<bool>> &tab, std::vector<std::vector<bool>> &res) : table(tab), res_table(res)
+    Collector(Table &tab, Table &res) : table(tab), res_table(res)
     {
-        size = (tab.size() - 2) * (tab[0].size() - 2);
+        size = tab.size() - 2;
     };
 
     // return true when it finishes
-    bool collect(int delta)
+    bool collect(RowID const &r)
     {
-        collected += delta;
+        auto pos = r.first;
+        auto row = r.second;
+
+        res_tab_m.lock();
+        res_table[pos] = row;
+        res_tab_m.unlock();
+        collected++;
 
         if (collected == size)
         {
-            // std::swap(table, res_table);
-            
             tab_m.lock();
             res_tab_m.lock();
-            table = res_table;
+            std::swap(table, res_table);
+            // table = res_table;
             tab_m.unlock();
             res_tab_m.unlock();
             collected = 0;
@@ -151,5 +149,4 @@ public:
         return false;
     }
 };
-
 }; // namespace FFarm
