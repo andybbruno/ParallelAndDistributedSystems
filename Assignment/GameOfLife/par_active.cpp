@@ -29,9 +29,9 @@ int main(int argc, char *argv[])
     FFarm::Worker worker;
     FFarm::Collector collector(table, res_table);
 
-    std::vector<buffer<Chunk>> ew_buff(nw); // emitter to worker buffer
-    std::vector<buffer<RowID>> wc_buff(nw); // worker to collector buffer
-    buffer<bool> ce_buff;                   // collector to emitter buffer
+    std::vector<buffer<Chunk>> ew_buff(nw);     // emitter to worker buffer
+    std::vector<buffer<RowID>> wc_buff(nw);     // worker to collector buffer
+    buffer<bool> ce_buff;                       // collector to emitter buffer
 
     auto emit = [&](FFarm::Emitter e) {
         for (int i = 0; i < niter; i++)

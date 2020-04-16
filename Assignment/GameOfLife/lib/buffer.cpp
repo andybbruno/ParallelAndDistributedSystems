@@ -11,7 +11,7 @@ private:
 public:
   buffer() : pbit(0) {}
 
-  void send(T i)
+  void send(T const &i)
   {
     while (pbit != 0);
     item = i;

@@ -42,10 +42,10 @@ struct Chunk
 };
 
 #define EOC \
-    RowID { -1, Row(1) }
+    RowID(-1, Row(1))
 
 #define EOS \
-    Chunk { -1 }
+    Chunk(-1)
 
 namespace tools
 {
