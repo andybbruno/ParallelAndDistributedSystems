@@ -24,7 +24,7 @@ done
 echo ""
 echo ""
 echo "Start: Parallel Active"
-for nw in 4 16 64 256
+for nw in 1 4 16 64 256
     do for i in 256 1024 4096 16384
         do 
         echo -e "NW =" $nw '\t' "N = M =" $i
@@ -36,7 +36,7 @@ done
 echo ""
 echo ""
 echo "Start: Parallel Passive"
-for nw in 4 16 64 256
+for nw in 1 4 16 64 256
     do for i in 256 1024 4096 16384
         do 
         echo -e "NW =" $nw '\t' "N = M =" $i
@@ -48,7 +48,7 @@ done
 echo ""
 echo ""
 echo "Start: Parallel OMP"
-for nw in 4 16 64 256
+for nw in 1 4 16 64 256
     do for i in 256 1024 4096 16384
         do 
         echo -e "NW =" $nw '\t' "N = M =" $i
