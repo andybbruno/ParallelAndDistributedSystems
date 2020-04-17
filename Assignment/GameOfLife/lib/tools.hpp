@@ -1,4 +1,3 @@
-#pragma once
 #include <vector>
 #include <chrono>
 #include <iostream>
@@ -41,11 +40,10 @@ struct Chunk
     }
 };
 
-#define EOC \
-    RowID(-1, Row(1))
 
-#define EOS \
-    Chunk(-1)
+RowID EOC(-1, Row(1));
+Chunk EOS(-1);
+
 
 namespace tools
 {

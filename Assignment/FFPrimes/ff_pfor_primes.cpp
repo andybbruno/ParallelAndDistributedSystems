@@ -30,26 +30,28 @@ int main(int argc, char *argv[])
         std::cerr << "use: " << argv[0] << " start end nw [print=off|on]\n";
         return -1;
     }
-    size_t start = std::stoll(argv[1]);
-    size_t end = std::stoll(argv[2]);
+    ull start = atoll(argv[1]);
+    ull end = atoll(argv[2]);
     int nw = atoi(argv[3]);
-    bool print_primes = false;
-    
+    bool doprint = (argc > 5) ? true : false;
 
     ff::ffTime(ff::START_TIME);
+    ff::ParallelFor pf(nw);
+
     std::vector<ull> results;
-    results.reserve((size_t)(n2 - n1) / log(n1));
+    results.reserve((size_t)(end - start) / log(start));
     ull prime;
 
-    while ((prime = n1++) <= n2)
-        if (is_prime(prime))
-            results.push_back(prime);
+    pf.parallel_for(start, end, [&results, prime](const long i) {
+        if (is_prime(i))
+            results.push_back(i);
+    });
 
     const size_t n = results.size();
     std::cout << "Found " << n << " primes\n";
     ff::ffTime(ff::STOP_TIME);
 
-    if (print_primes)
+    if (doprint)
     {
         for (size_t i = 0; i < n; ++i)
             std::cout << results[i] << " ";
