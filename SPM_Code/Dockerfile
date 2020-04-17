@@ -1,6 +1,5 @@
 ### start from current ubuntu image
 FROM ubuntu:eoan
-MAINTAINER marcod
 
 ### install sudo
 RUN apt-get update && \
@@ -17,6 +16,7 @@ RUN apt update \
     && apt install -y software-properties-common \
     && apt install -y hwloc \
     && apt install -y htop
+
 ### make g++-9 default g++ compiler
 RUN update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 100
 ### install FastFlow
@@ -36,12 +36,10 @@ RUN service ssh start
 RUN apt install -y libtbb-dev
 ### add rsync
 RUN apt install -y rsync
-### fix user
-RUN useradd -ms /bin/bash spm2020user
-
 
 RUN sudo apt-get install -y libboost-all-dev
 
-USER spm2020user
-
-WORKDIR /home/spm2020user
+RUN ["apt-get", "install", "-y", "zsh"]
+RUN wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true
+CMD [ "zsh" ]
+WORKDIR /home

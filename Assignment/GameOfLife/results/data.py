@@ -17,7 +17,7 @@ par2 = df2.groupby(['nw', 'rowcol']).mean().reset_index()
 par3 = df3.groupby(['nw', 'rowcol']).mean().reset_index()
 
 
-for nw in [4, 16, 64, 256]:
+for nw in [1, 4, 16, 64, 256]:
     fig = plt.figure()
     tmp1 = par1[(par1.nw == nw)]
     tmp2 = par2[(par2.nw == nw)]
@@ -51,10 +51,34 @@ for col in [256, 1024, 4096, 16384]:
     plt.xscale('log')
     plt.ylabel('SpeedUp')
     plt.xlabel('NW')
-    plt.title("Size: " + str(col))
+    plt.title("SPEEDUP ::: Size: " + str(col))
     plt.legend(handles=[a,b,c])
     plt.show()
     fig.savefig('speedup' + str(col) + '.png')
+
+for col in [256, 1024, 4096, 16384]:
+    fig = plt.figure()
+    
+    tt1 = par1[(par1.rowcol == col) & (par1.nw == 1)]['time'].iloc[0]
+    tt2 = par2[(par2.rowcol == col) & (par2.nw == 1)]['time'].iloc[0]
+    tt3 = par1[(par3.rowcol == col) & (par3.nw == 1)]['time'].iloc[0]
+
+    tmp1 = par1[(par1.rowcol == col)]
+    tmp2 = par2[(par2.rowcol == col)]
+    tmp3 = par3[(par3.rowcol == col)]
+    # plt.plot(seq['rowcol'], seq['time'], 'o-b')
+    plt.plot([0, 256], [0, 256])
+    a, = plt.plot(tmp1['nw'], tmp1['time'].div(tt1), '-*r', label='ActiveFarm')
+    b, = plt.plot(tmp2['nw'], tmp2['time'].div(tt2), 's-.g', label='PassiveFarm')
+    c, = plt.plot(tmp3['nw'], tmp3['time'].div(tt3), '^--y', label='ParallelForOMP')
+    plt.yscale('log')
+    plt.xscale('log')
+    # plt.ylabel('SpeedUp')
+    plt.xlabel('NW')
+    plt.title("SCALABILITY ::: Size: " + str(col))
+    plt.legend(handles=[a,b,c])
+    plt.show()
+    fig.savefig('scalability' + str(col) + '.png')
 
 # res0 = res0[(res0.rowcol == 256)]
 # res0.plot(x='rowcol', y='time')
