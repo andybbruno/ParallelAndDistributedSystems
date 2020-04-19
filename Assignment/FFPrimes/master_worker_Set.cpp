@@ -103,7 +103,6 @@ struct Worker : ff_node_t<Task>
     Task *svc(Task *task)
     {
         Task &t = *task;
-        // std::cout << "secondStage received " << t << "\n";
         for (auto i = t.start; i <= t.end; i++)
         {
             if (is_prime(i))

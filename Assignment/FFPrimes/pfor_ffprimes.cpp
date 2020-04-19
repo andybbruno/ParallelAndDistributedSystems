@@ -2,6 +2,7 @@
 #include <vector>
 #include <cmath>
 #include <cstdlib>
+#include <mutex>
 #include <ff/utils.hpp>
 #include <ff/parallel_for.hpp>
 
@@ -25,26 +26,31 @@ static inline bool is_prime(ull n)
 
 int main(int argc, char *argv[])
 {
-    if (argc < 3)
+
+    if (argc < 5)
     {
-        std::cerr << "use: " << argv[0] << " start end nw [print=off|on]\n";
+        std::cerr << "use: " << argv[0] << " start end nw chunksize [print=off|on]\n";
         return -1;
     }
     ull start = atoll(argv[1]);
     ull end = atoll(argv[2]);
     int nw = atoi(argv[3]);
-    bool doprint = (argc > 4) ? true : false;
+    int chunk = atoi(argv[4]);
+    bool doprint = (argc > 5) ? true : false;
 
     ff::ffTime(ff::START_TIME);
     ff::ParallelFor pf(nw);
 
     std::vector<ull> results;
-    results.reserve((size_t)(end - start) / log(start));
-    
 
-    pf.parallel_for(start, end, [&results](const long i) {
+    std::mutex mtx;
+    pf.parallel_for(start, end, 1, chunk, [&](const long i) {
         if (is_prime(i))
+        {
+            mtx.lock();
             results.push_back(i);
+            mtx.unlock();
+        }
     });
 
     const size_t n = results.size();
