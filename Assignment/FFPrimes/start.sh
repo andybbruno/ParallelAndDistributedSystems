@@ -5,20 +5,11 @@ rm -f results/ofarm.csv
 rm -f results/set.csv
 rm -f results/seq.csv
 
-a='2'
-b='10000000' 
+a='95000000'
+b='100000000' 
 
-# echo "Compiling.."
-# make all
-
-
-echo ""
-echo ""
-echo "Start: Seq"
-for j in {1..5} 
-    do ./primes.o $a $b >> results/seq.csv
-done
-
+echo "Compiling.."
+make all
 
 echo ""
 echo ""
@@ -53,6 +44,15 @@ for nw in 1 4 16 64 256
         done
     done
 done
+
+
+echo ""
+echo ""
+echo "Start: Seq"
+for j in {1..5} 
+    do ./primes.o $a $b >> results/seq.csv
+done
+
 
 echo ""
 echo ""
