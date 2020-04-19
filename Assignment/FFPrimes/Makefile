@@ -37,9 +37,7 @@ CXXFLAGS  	= -g # -DBLOCKING_MODE -DFF_BOUNDED_BUFFER
 LDFLAGS 	= -pthread
 OPTFLAGS	= -O3 -finline-functions -DNDEBUG
 
-TARGETS		= onenode     \
-		  pipe_square \
-		  termination_with_loop
+TARGETS		= master_worker_OFarm master_worker_Set pfor_ffprimes primes
 
 .PHONY: all clean cleanall
 .SUFFIXES: .cpp 

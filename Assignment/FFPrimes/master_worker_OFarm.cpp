@@ -86,9 +86,9 @@ struct Master : ff_node_t<Task>
         {
             npr += p->size();
         }
-        std::cout << "Found " << npr << " primes\n";
         if (print)
         {
+            std::cout << "Found " << npr << " primes\n";
             for (auto x : res)
             {
                 std::cout << x << " ";
@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
         return -1;
     }
     ffTime(STOP_TIME);
-    std::cout << "Time: " << ffTime(GET_TIME) << " (ms)\n";
-
+    // std::cout << "Time: " << ffTime(GET_TIME) << " (ms)\n";
+    std::cout << nw << "," << ffTime(GET_TIME) << "\n";
     return 0;
 }

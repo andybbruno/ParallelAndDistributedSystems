@@ -46,15 +46,16 @@ int main(int argc, char *argv[])
             results.push_back(prime);
 
     const size_t n = results.size();
-    std::cout << "Found " << n << " primes\n";
     ff::ffTime(ff::STOP_TIME);
 
     if (print_primes)
     {
+        std::cout << "Found " << n << " primes\n";
         for (size_t i = 0; i < n; ++i)
             std::cout << results[i] << " ";
         std::cout << "\n\n";
     }
-    std::cout << "Time: " << ff::ffTime(ff::GET_TIME) << " (ms)\n";
+    // std::cout << "Time: " << ff::ffTime(ff::GET_TIME) << " (ms)\n";
+    std::cout << 1 << "," << ff::ffTime(ff::GET_TIME) << "\n";
     return 0;
 }
