@@ -50,17 +50,17 @@ for col in [256, 1024, 4096, 16384]:
 
 
     plt.plot([0, 256], [0, 256],'k')
-    a, = plt.plot(tmp1['nw'], tmp1['time'].div(tseq), '-*r', label='ActiveFarm')
-    b, = plt.plot(tmp2['nw'], tmp2['time'].div(tseq), 's-.g', label='PassiveFarm')
-    c, = plt.plot(tmp3['nw'], tmp3['time'].div(tseq), '^--y', label='ParallelForOMP')
-    d, = plt.plot(tmp4['nw'], tmp4['time'].div(tseq), ':Dm', label='ParallelForFF')
+    a, = plt.plot(tmp1['nw'], tseq / tmp1['time'], '-*r', label='ActiveFarm')
+    b, = plt.plot(tmp2['nw'], tseq / tmp2['time'], 's-.g', label='PassiveFarm')
+    c, = plt.plot(tmp3['nw'], tseq / tmp3['time'], '^--y', label='ParallelForOMP')
+    d, = plt.plot(tmp4['nw'], tseq / tmp4['time'], ':Dm', label='ParallelForFF')
 
     plt.yscale('log')
     plt.xscale('log')
     plt.ylabel('SpeedUp')
     plt.xlabel('NW')
     plt.title("SPEEDUP ::: Size: " + str(col))
-    plt.legend(handles=[a,b,c,e])
+    plt.legend(handles=[a,b,c,d])
     plt.show()
     fig.savefig('speedup' + str(col) + '.png')
 
@@ -78,10 +78,10 @@ for col in [256, 1024, 4096, 16384]:
     tmp4 = par4[(par4.rowcol == col)]
 
     plt.plot([0, 256], [0, 256],'k')
-    a, = plt.plot(tmp1['nw'], tmp1['time'].div(tt1), '-*r', label='ActiveFarm')
-    b, = plt.plot(tmp2['nw'], tmp2['time'].div(tt2), 's-.g', label='PassiveFarm')
-    c, = plt.plot(tmp3['nw'], tmp3['time'].div(tt3), '^--y', label='ParallelForOMP')
-    d, = plt.plot(tmp4['nw'], tmp4['time'].div(tt4), ':Dm', label='ParallelForFF')
+    a, = plt.plot(tmp1['nw'], tt1 / tmp1['time'], '-*r', label='ActiveFarm')
+    b, = plt.plot(tmp2['nw'], tt2 / tmp2['time'], 's-.g', label='PassiveFarm')
+    c, = plt.plot(tmp3['nw'], tt3 / tmp3['time'], '^--y', label='ParallelForOMP')
+    d, = plt.plot(tmp4['nw'], tt4 / tmp4['time'], ':Dm', label='ParallelForFF')
 
     plt.yscale('log')
     plt.xscale('log')
