@@ -5,8 +5,8 @@ rm -f results/ofarm.csv
 rm -f results/set.csv
 rm -f results/seq.csv
 
-a = '2'
-b = '10000000' 
+a='2'
+b='10000000' 
 
 # echo "Compiling.."
 # make all
@@ -15,12 +15,10 @@ b = '10000000'
 echo ""
 echo ""
 echo "Start: Seq"
-for nw in 1 4 16 64 256
-    do echo -e "NW =" $nw
-    for j in {1..5} 
-        do ./primes.o $a $b >> results/seq.csv
-    done
-done 
+for j in {1..5} 
+    do ./primes.o $a $b >> results/seq.csv
+done
+
 
 echo ""
 echo ""
