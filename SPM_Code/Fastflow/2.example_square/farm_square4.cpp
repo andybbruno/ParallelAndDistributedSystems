@@ -36,56 +36,67 @@
 #include <ff/farm.hpp>
 using namespace ff;
 
-struct firstThirdStage: ff_node_t<float> {
-    firstThirdStage(const size_t length):length(length) {}
-    float* svc(float *task) {
-        if (task == nullptr) {
-            for(size_t i=0; i<length; ++i) {
+struct firstThirdStage : ff_node_t<float>
+{
+    firstThirdStage(const size_t length) : length(length) {}
+    float *svc(float *task)
+    {
+        if (task == nullptr)
+        {
+            for (size_t i = 0; i < length; ++i)
+            {
                 ff_send_out(new float(i));
             }
             return GO_ON;
-        }        
+        }
         float &t = *task;
-        std::cout<< "thirdStage received " << t << "\n";
-        sum += t; 
+        std::cout << "thirdStage received " << t << "\n";
+        sum += t;
         delete task;
-        if (++ntasks == length) return EOS;
-        return GO_ON;         
+        if (++ntasks == length)
+            return EOS;
+        return GO_ON;
     }
     void svc_end() { std::cout << "sum = " << sum << "\n"; }
 
     const size_t length;
-    size_t ntasks=0;
+    size_t ntasks = 0;
     float sum = 0.0;
 };
 
-struct secondStage: ff_node_t<float> {
-    float* svc(float * task) { 
-        float &t = *task; 
-        std::cout<< "secondStage received " << t << "\n";
-        t = t*t;
-        return task; 
+struct secondStage : ff_node_t<float>
+{
+    float *svc(float *task)
+    {
+        float &t = *task;
+        std::cout << "secondStage received " << t << "\n";
+        t = t * t;
+        return task;
     }
 };
 
-int main(int argc, char *argv[]) {    
-    if (argc<3) {
-        std::cerr << "use: " << argv[0]  << " nworkers stream-length\n";
+int main(int argc, char *argv[])
+{
+    if (argc < 3)
+    {
+        std::cerr << "use: " << argv[0] << " nworkers stream-length\n";
         return -1;
     }
     const size_t nworkers = std::stol(argv[1]);
-    firstThirdStage  firstthird(std::stol(argv[2]));
+    firstThirdStage firstthird(std::stol(argv[2]));
 
-    std::vector<std::unique_ptr<ff_node> > W;
-    for(size_t i=0;i<nworkers;++i) W.push_back(make_unique<secondStage>());
+    std::vector<std::unique_ptr<ff_node>> W;
+    for (size_t i = 0; i < nworkers; ++i)
+        W.push_back(make_unique<secondStage>());
 
     ff_Farm<float> farm(std::move(W), firstthird);
     farm.remove_collector(); // needed because the collector is present by default in the ff_Farm
-    farm.wrap_around();   // this call creates feedbacks from Workers to the Emitter
+    farm.wrap_around();      // this call creates feedbacks from Workers to the Emitter
     //farm.set_scheduling_ondemand(); // optional
 
     ffTime(START_TIME);
-    if (farm.run_and_wait_end()<0) {
+    if (farm.run_and_wait_end() < 0)
+    {
         error("running farm");
         return -1;
     }

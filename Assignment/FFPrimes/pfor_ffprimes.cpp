@@ -7,7 +7,7 @@
 
 using ull = unsigned long long;
 
-static bool is_prime(ull n)
+static inline bool is_prime(ull n)
 {
     if (n <= 3)
         return n > 1; // 1 is not prime !
@@ -33,16 +33,16 @@ int main(int argc, char *argv[])
     ull start = atoll(argv[1]);
     ull end = atoll(argv[2]);
     int nw = atoi(argv[3]);
-    bool doprint = (argc > 5) ? true : false;
+    bool doprint = (argc > 4) ? true : false;
 
     ff::ffTime(ff::START_TIME);
     ff::ParallelFor pf(nw);
 
     std::vector<ull> results;
     results.reserve((size_t)(end - start) / log(start));
-    ull prime;
+    
 
-    pf.parallel_for(start, end, [&results, prime](const long i) {
+    pf.parallel_for(start, end, [&results](const long i) {
         if (is_prime(i))
             results.push_back(i);
     });
