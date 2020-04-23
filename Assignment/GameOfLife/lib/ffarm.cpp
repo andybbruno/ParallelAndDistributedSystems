@@ -62,49 +62,42 @@ public:
 
         for (size_t i = 1; i < size - 1; i++)
         {
-            neigh[i] = partialSum[i - 1] + partialSum[i] + partialSum[i + 1];
+            neigh[i] = partialSum[i - 1] + partialSum[i] + partialSum[i + 1] - curr[i];
         }
 
-        for (size_t i = 1; i < size - 1; i++)
-        {
-            // if (curr[i] == ON)
-            // {
-            //     neigh[i] -= 1;
-            // }
-            neigh[i] -= curr[i];
-        }
+        // for (size_t i = 1; i < size - 1; i++)
+        // {
+        //     // if (curr[i] == ON)
+        //     // {
+        //     //     neigh[i] -= 1;
+        //     // }
+        //     neigh[i] -= curr[i];
+        // }
 
         for (size_t i = 1; i < size - 1; i++)
-        {
-            // if ((curr[i] == ON) & ((neigh[i] < 2) | (neigh[i] > 3)))
+        {   
+            // auto neig = neigh[i];
+            // auto alive = curr[i];
+            // if (alive == ON)
             // {
-            //     res[i] = OFF;
+            //     if ((neig < 2) | (neig > 3))
+            //     {
+            //         res[i] = OFF;
+            //     }
+            //     else if ((neig == 2) | (neig == 3))
+            //     {
+            //         res[i] = ON;
+            //     }
             // }
-            // else if ((curr[i] == OFF) & (neigh[i] == 3))
+            // else
             // {
-            //     res[i] = ON;
+            //     if (neig == 3)
+            //     {
+            //         res[i] = ON;
+            //     }
             // }
-            auto neig = neigh[i];
-            auto alive = curr[i];
 
-            if (alive == ON)
-            {
-                if ((neig < 2) | (neig > 3))
-                {
-                    res[i] = OFF;
-                }
-                else if ((neig == 2) | (neig == 3))
-                {
-                    res[i] = ON;
-                }
-            }
-            else
-            {
-                if (neig == 3)
-                {
-                    res[i] = ON;
-                }
-            }
+            res[i] = (neigh[i] == 3) || ((curr[i] == ON) && (neigh[i] == 2));
         }
         return RowID{curr_idx, res};
     }
