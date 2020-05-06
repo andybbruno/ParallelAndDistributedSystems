@@ -1,6 +1,7 @@
 #include <iostream>
 #include <future>
 #include <vector>
+#include <algorithm>
 #include "utimer.cpp"
 #include "base_async.cpp"
 

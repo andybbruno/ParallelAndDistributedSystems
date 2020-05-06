@@ -1,7 +1,7 @@
 #include <thread>
 #include <future>
 
-int THREAD_THRESHOLD = 64;
+int THREAD_THRESHOLD = std::thread::hardware_concurrency();
 
 template <typename Tin, typename Tout>
 Tout dc(Tin input,
