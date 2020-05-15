@@ -1,4 +1,8 @@
 #include <iostream>
+#include <vector>
+#include <numeric>
+#include <string>
+#include <functional>
 #include <omp.h>
 #include "lib/utimer.cpp"
 #include "opencv2/imgproc.hpp"
@@ -20,6 +24,8 @@ int main(int argc, char *argv[])
     std::vector<cv::String> files;
     glob(path, files, false);
 
+    nw = std::min(nw, (int)files.size());
+
     utimer u("FF");
     ff::ParallelFor pf(nw);
 
@@ -32,7 +38,7 @@ int main(int argc, char *argv[])
         Mat abs_grad_y;
         Mat gauss;
 
-        Mat tmp = imread(samples::findFile(files[i]), IMREAD_COLOR);
+        Mat tmp = imread(files[i], IMREAD_COLOR);
         cvtColor(tmp, src_gray, COLOR_BGR2GRAY);
         GaussianBlur(src_gray, gauss, Size(13, 13), 0, 0);
         Sobel(gauss, grad_x, CV_16S, 1, 0, 1, 1, 0, BORDER_DEFAULT);
@@ -43,4 +49,6 @@ int main(int argc, char *argv[])
         String str = "res/" + std::to_string(i) + ".jpg";
         imwrite(str, grad);
     });
+
+    std::cout << "Processed " << files.size() << " elements" << std::endl;
 }
