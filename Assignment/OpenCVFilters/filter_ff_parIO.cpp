@@ -21,12 +21,14 @@ int main(int argc, char *argv[])
     String path = argv[1];
     int nw = atoi(argv[2]);
 
+    std::cout << nw;
+
     std::vector<cv::String> files;
     glob(path, files, false);
 
     nw = std::min(nw, (int)files.size());
 
-    utimer u("FF");
+    utimer u("");
     ff::ParallelFor pf(nw);
 
     pf.parallel_for(0, files.size(), [&](const long i) {
@@ -50,5 +52,5 @@ int main(int argc, char *argv[])
         imwrite(str, grad);
     });
 
-    std::cout << "Processed " << files.size() << " elements" << std::endl;
+    // std::cout << "Processed " << files.size() << " elements" << std::endl;
 }

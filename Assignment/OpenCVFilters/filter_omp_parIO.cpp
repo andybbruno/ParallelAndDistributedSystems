@@ -18,12 +18,14 @@ int main(int argc, char *argv[])
     String path = argv[1];
     int nw = atoi(argv[2]);
 
+    std::cout << nw;
+
     std::vector<cv::String> files;
     glob(path, files, false);
 
     nw = std::min(nw, (int)files.size());
 
-    utimer u("OMP");
+    utimer u("");
 
 #pragma omp parallel for num_threads(nw)
     for (size_t i = 0; i < files.size(); i++)
@@ -48,5 +50,5 @@ int main(int argc, char *argv[])
         imwrite(str, grad);
     }
 
-    std::cout << "Processed " << files.size() << " elements" << std::endl;
+    // std::cout << "Processed " << files.size() << " elements" << std::endl;
 }
