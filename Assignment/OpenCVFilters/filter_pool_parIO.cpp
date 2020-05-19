@@ -17,6 +17,8 @@ int main(int argc, char *argv[])
 {
     String path = argv[1];
     int nw = atoi(argv[2]);
+
+    std::cout << nw;
     
     std::vector<cv::String> files;
     glob(path, files, false);
@@ -25,7 +27,7 @@ int main(int argc, char *argv[])
 
     auto start = std::chrono::high_resolution_clock::now();
     auto elapsed = std::chrono::high_resolution_clock::now() - start;
-    utimer u("POOL");
+    utimer u("");
 
     std::vector<std::pair<int, int>> ranges(nw);
     int delta = files.size() / nw;
@@ -73,5 +75,5 @@ int main(int argc, char *argv[])
     { // await thread termination
         t.join();
     }
-    std::cout << "Processed " << files.size() << " elements" << std::endl;
+    // std::cout << "Processed " << files.size() << " elements" << std::endl;
 }
