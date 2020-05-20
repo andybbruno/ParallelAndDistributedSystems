@@ -7,7 +7,7 @@ echo ""
 echo "Start: Pool"
 for nw in 1 4 8 16 32 64 128 256
     do
-    ./filter_ff_parIO.o /home/bruno25-spm19/img $nw >> res_ff.txt
+    ./filter_pool_parIO.o /home/bruno25-spm19/img $nw >> res_parIO.txt
 done
 echo ""
 echo ""
