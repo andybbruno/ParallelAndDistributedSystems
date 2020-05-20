@@ -75,7 +75,7 @@ struct Read : ff_node_t<Task>
 					infile.read((char *)&data[i], sizeof(unsigned char));
 				}
 				std::string partname(rawname + ".part" + std::to_string(i));
-				std::cout << "nchunks:" << nchunks << std::endl;
+				// std::cout << "nchunks:" << nchunks << std::endl;
 				Task *t = new Task(data, sz, partname, fname, nchunks);
 				ff_send_out(t);
 
@@ -253,32 +253,30 @@ struct FileMerge : ff_node_t<Task>
 
 	Task *svc(Task *task)
 	{
-		if (mapping.find(task->original_filename) == mapping.end())
-		{
-			mapping.insert(std::pair<std::string, int>(task->original_filename, task->nchunks));
-		}
-
 		auto it = mapping.find(task->original_filename);
-		if (it != mapping.end())
-			it->second = it->second - 1;
-
-		std::cout << it->first << std::endl;
-		std::cout << it->second << std::endl;
-		if (it->second == 0)
+		if (it == mapping.end())
 		{
-			size_t lastindex = task->original_filename.find_last_of(".");
-			std::string rawname = task->original_filename.substr(0, lastindex);
-
-			std::string stemp("tar cf " + rawname + ".zip " + rawname + ".part*.zip");
-			std::cout << stemp << std::endl;
-			system(stemp.c_str());
-
-			// std::string delstr("find . -name \"" + rawname + ".part*.zip\" -delete");
-			// std::cout << delstr << std::endl;
-			// system(delstr.c_str());
-			
+			mapping.insert(std::pair<std::string, int>(task->original_filename, task->nchunks - 1));
 		}
+		else
+		{
+			it->second -= 1;
+			// std::cout << it->first << std::endl;
+			// std::cout << it->second << std::endl;
+			if (it->second == 0)
+			{
+				size_t lastindex = task->original_filename.find_last_of(".");
+				std::string rawname = task->original_filename.substr(0, lastindex);
 
+				std::string stemp("tar -cf " + rawname + ".zip " + rawname + ".part*.zip");
+				// std::cout << stemp << std::endl;
+				system(stemp.c_str());
+
+				// std::string delstr("find . -name \"" + rawname + ".part*.zip\" -delete");
+				// std::cout << delstr << std::endl;
+				// system(delstr.c_str());
+			}
+		}
 		delete task;
 		return GO_ON;
 	}
@@ -341,5 +339,6 @@ int main(int argc, char *argv[])
 	success &= compress.success;
 	success &= writer.success;
 
+	system("find . -name \"*.part*.zip\" -delete");
 	return 0;
 }
