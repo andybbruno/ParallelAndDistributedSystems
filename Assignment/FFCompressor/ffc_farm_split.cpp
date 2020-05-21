@@ -1,17 +1,4 @@
-/*
- * Simple file compressor using miniz and the FastFlow pipeline.
- *
- * miniz source code: https://github.com/richgel999/miniz
- * https://code.google.com/archive/p/miniz/
- * 
- */
-/* Author: Massimo Torquati <massimo.torquati@unipi.it>
- * This code is a mix of POSIX C code and some C++ library call 
- * (mainly for strings manipulation).
- */
-
 #include <miniz.h>
-
 #include <string>
 #include <iostream>
 #include <filesystem>
@@ -24,82 +11,74 @@ using namespace ff;
 
 struct Task
 {
-	Task(const std::vector<unsigned char> &bytes, size_t size, const std::string &name, const std::string &oname, size_t nch = 1) : bytes(bytes),
-																																	size(size),
-																																	nchunks(nch),
-																																	filename(name),
-																																	original_filename(oname) {}
+	Task(char *bytes, size_t size, const std::string &name, const std::string &oname, size_t nch = 1) : bytes(bytes),
+																										size(size),
+																										nchunks(nch),
+																										filename(name),
+																										original_filename(oname) {}
 
-	std::vector<unsigned char> bytes;
+	char *bytes;
 	size_t size;
 	size_t nchunks;
 	const std::string filename;
 	const std::string original_filename;
 };
 
-// 1st stage
-struct Read : ff_node_t<Task>
+struct MiniTask
 {
-	const char **argv;
-	const int argc;
+	MiniTask(const std::string &name, const std::string &oname, size_t nch) : nchunks(nch),
+																			  filename(name),
+																			  original_filename(oname) {}
+
+	size_t nchunks;
+	const std::string filename;
+	const std::string original_filename;
+};
+
+struct Splitter : ff_node_t<MiniTask>
+{
 	bool success = true;
 	size_t threshold;
+	char *filefolder;
 
-	Read(const char **argv, int argc, size_t threshold) : argv(argv), argc(argc), threshold(threshold) {}
+	Splitter(char *filefolder, size_t threshold) : filefolder(filefolder), threshold(threshold) {}
 
-	// ------------------- utility functions
-	// It memory maps the input file and then assigns a task to
-	// one Worker
-	bool doWork(const std::string &fname)
+	bool split(const std::string &fname)
 	{
 		auto infile = std::ifstream(fname, std::ios::out | std::ios::binary);
 		auto fsize = std::filesystem::file_size(fname);
 
 		unsigned char *ptr = nullptr;
 
+		//SPLIT THE FILE
 		if (fsize > threshold)
 		{
-			//SPLIT THE FILE
-			//SEND TO THE WORKERS CHUNKS OF DATA
 			int nchunks = fsize / threshold;
-
-			size_t lastindex = fname.find_last_of(".");
-			std::string rawname = fname.substr(0, lastindex);
-
 			for (int i = 0; i < nchunks; i++)
 			{
 				int sz = (i == (nchunks - 1)) ? fsize % threshold : threshold;
-				std::vector<unsigned char> data(sz);
-				for (int i = 0; i < sz; i++)
+				char data[sz];
+				infile.read(data, sz);
+				std::string partname(fname + ".tmp.part" + std::to_string(i));
+				auto partfile = std::ofstream(partname, std::ios::out | std::ios::binary);
+				if (partfile)
 				{
-					infile.read((char *)&data[i], sizeof(unsigned char));
-				}
-				std::string partname(rawname + ".part" + std::to_string(i));
-				// std::cout << "nchunks:" << nchunks << std::endl;
-				Task *t = new Task(data, sz, partname, fname, nchunks);
-				ff_send_out(t);
+					partfile.write(data, sz);
+					MiniTask *t = new MiniTask(partname, fname, nchunks);
+					ff_send_out(t); // sending to the next stage
 
-				// std::cout << "i: " << i << "\t\tsize: " << sz << "\t\tname: " << partname << std::endl;
-				// int position = i * threshold;
-				// unsigned char *ptr = &data[position];
-				// int sz = (i == (nchunks - 1)) ? fsize % threshold : threshold;
-				// Task *t = new Task(ptr, sz, (fname + std::to_string(i)));
-				// ff_send_out(t);
+					// std::cout << "Split: " << partname << std::endl;
+				}
+				else
+				{
+					// std::cout << "Problema file: " << partname << std::endl;
+					return false;
+				}
 			}
-		}
-		else
-		{
-			//SEND PLAIN DATA
-			std::vector<unsigned char> data(fsize);
-			for (int i = 0; i < fsize; i++)
-			{
-				infile.read((char *)&data[i], sizeof(unsigned char));
-			}
-			Task *t = new Task(data, fsize, fname, fname);
-			ff_send_out(t); // sending to the next stage
 		}
 		return true;
 	}
+
 	// walks through the directory tree rooted in dname
 	bool walkDir(const std::string &dname, size_t size)
 	{
@@ -132,7 +111,7 @@ struct Read : ff_node_t<Task>
 			}
 			else
 			{
-				if (!doWork(filename))
+				if (!split(filename))
 					error = true;
 			}
 		}
@@ -146,28 +125,72 @@ struct Read : ff_node_t<Task>
 	}
 	// -------------------
 
-	Task *svc(Task *)
+	MiniTask *svc(MiniTask *)
 	{
-		for (long i = 0; i < argc; ++i)
+		struct stat statbuf;
+		if (stat(filefolder, &statbuf) == -1)
 		{
-			struct stat statbuf;
-			if (stat(argv[i], &statbuf) == -1)
+			perror("stat");
+			fprintf(stderr, "Error: stat %s\n", filefolder);
+		}
+		bool dir = false;
+		if (S_ISDIR(statbuf.st_mode))
+		{
+			success &= walkDir(filefolder, statbuf.st_size);
+		}
+		else
+		{
+			success &= split(filefolder);
+		}
+		return EOS;
+	}
+
+	void svc_end()
+	{
+		if (!success)
+		{
+			printf("Split stage: Exiting with (some) Error(s)\n");
+			return;
+		}
+	}
+};
+
+// 1st stage
+struct Read : ff_node_t<MiniTask, Task>
+{
+	bool success = true;
+	Task *svc(MiniTask *mt)
+	{
+		std::string fname = mt->filename;
+
+		auto infile = std::ifstream(fname, std::ios::out | std::ios::binary);
+		if (!infile)
+		{
+			success = false;
+		}
+		else
+		{
+			auto fsize = std::filesystem::file_size(fname);
+			char data[fsize];
+			infile.read(data, fsize);
+
+			int nchunks = mt->nchunks;
+			auto oname = mt->original_filename;
+
+			if (nchunks > 1)
 			{
-				perror("stat");
-				fprintf(stderr, "Error: stat %s\n", argv[i]);
-				continue;
-			}
-			bool dir = false;
-			if (S_ISDIR(statbuf.st_mode))
-			{
-				success &= walkDir(argv[i], statbuf.st_size);
+				Task *t = new Task(data, fsize, fname, oname, nchunks);
+				ff_send_out(t); // sending to the next stage
+				// std::cout << "Read: " << fname << "\t" << oname << std::endl;
 			}
 			else
 			{
-				success &= doWork(argv[i]);
+				Task *t = new Task(data, fsize, fname, fname);
+				ff_send_out(t); // sending to the next stage
+				// std::cout << "Read: " << fname << std::endl;
 			}
 		}
-		return EOS;
+		return GO_ON;
 	}
 
 	void svc_end()
@@ -179,12 +202,14 @@ struct Read : ff_node_t<Task>
 		}
 	}
 };
+
 // 2nd stage
 struct Compressor : ff_node_t<Task>
 {
 	Task *svc(Task *task)
 	{
-		unsigned char *inPtr = reinterpret_cast<unsigned char *>(task->bytes.data());
+		// std::cout << "COMPRESSOR" << std::endl;
+		unsigned char *inPtr = reinterpret_cast<unsigned char *>(task->bytes);
 
 		size_t inSize = task->size;
 		// get an estimation of the maximum compression size
@@ -199,8 +224,8 @@ struct Compressor : ff_node_t<Task>
 			return GO_ON;
 		}
 
-		task->bytes = std::vector<unsigned char>(ptrOut, ptrOut + cmp_len);
-		// task->cmp_size = cmp_len;
+		task->bytes = reinterpret_cast<char *>(ptrOut);
+		task->size = cmp_len;
 		ff_send_out(task);
 
 		// unmapFile(inPtr, inSize);
@@ -221,12 +246,13 @@ struct Write : ff_node_t<Task>
 {
 	Task *svc(Task *task)
 	{
+		// std::cout << "WRITE" << std::endl;
 		const std::string outfile = task->filename + ".zip";
 		// write the compressed data into disk
 
-		unsigned char *inPtr = reinterpret_cast<unsigned char *>(task->bytes.data());
+		unsigned char *inPtr = reinterpret_cast<unsigned char *>(task->bytes);
 
-		success &= writeFile(outfile, inPtr, task->bytes.size());
+		success &= writeFile(outfile, inPtr, task->size);
 		if (success && REMOVE_ORIGIN)
 		{
 			unlink(task->filename.c_str());
@@ -253,6 +279,7 @@ struct FileMerge : ff_node_t<Task>
 
 	Task *svc(Task *task)
 	{
+		// std::cout << "MERGE:" << task->original_filename << "\t" << task->filename << std::endl;
 		auto it = mapping.find(task->original_filename);
 		if (it == mapping.end())
 		{
@@ -265,10 +292,7 @@ struct FileMerge : ff_node_t<Task>
 			// std::cout << it->second << std::endl;
 			if (it->second == 0)
 			{
-				size_t lastindex = task->original_filename.find_last_of(".");
-				std::string rawname = task->original_filename.substr(0, lastindex);
-
-				std::string stemp("tar -cf " + rawname + ".zip " + rawname + ".part*.zip");
+				std::string stemp("tar -cf " + task->original_filename + ".zip " + task->original_filename + ".tmp.part*.zip");
 				// std::cout << stemp << std::endl;
 				system(stemp.c_str());
 
@@ -303,7 +327,8 @@ int main(int argc, char *argv[])
 	int nw = atoi(argv[1]);
 	size_t threshold = atoll(argv[3]);
 
-	Read reader(const_cast<const char **>(&argv[2]), 1, threshold);
+	Splitter split(argv[2], threshold);
+	Read reader;
 	Compressor compress;
 	Write writer;
 	FileMerge fmerge;
@@ -313,32 +338,25 @@ int main(int argc, char *argv[])
 	std::vector<std::unique_ptr<ff_node>> W;
 	for (size_t i = 0; i < nw; ++i)
 	{
-		// std::unique_ptr<ff_node_t<Task>> rdr(new Read());
 		std::unique_ptr<ff_node_t<Task>> com(new Compressor());
 		std::unique_ptr<ff_node_t<Task>> wrt(new Write());
-
 		W.push_back(std::unique_ptr<ff_Pipe<Task>>(new ff_Pipe<Task>(com, wrt)));
 	}
 
-	ff_Farm<Task> farm(std::move(W), reader, fmerge);
+	ff_Farm<Task> farm(std::move(W), reader);
+	farm.set_scheduling_ondemand();
+	ff_Pipe<Task> complete(split, farm, fmerge);
 
-	// farm.remove_collector();
-	//farm.wrap_around();
-
-	std::cout << nw;
 	utimer u("");
 
-	if (farm.run_and_wait_end() < 0)
+	if (complete.run_and_wait_end() < 0)
 	{
 		error("running farm");
 		return -1;
 	}
 
-	bool success = true;
-	success &= reader.success;
-	success &= compress.success;
-	success &= writer.success;
+	system("find . -name \"*.tmp.part*\" -delete");
 
-	system("find . -name \"*.part*.zip\" -delete");
+	std::cout << nw;
 	return 0;
 }
