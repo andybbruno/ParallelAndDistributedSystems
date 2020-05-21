@@ -66,12 +66,9 @@ struct Splitter : ff_node_t<MiniTask>
 					partfile.write(data, sz);
 					MiniTask *t = new MiniTask(partname, fname, nchunks);
 					ff_send_out(t); // sending to the next stage
-
-					// std::cout << "Split: " << partname << std::endl;
 				}
 				else
 				{
-					// std::cout << "Problema file: " << partname << std::endl;
 					return false;
 				}
 			}
@@ -155,7 +152,7 @@ struct Splitter : ff_node_t<MiniTask>
 	}
 };
 
-// 1st stage
+
 struct Read : ff_node_t<MiniTask, Task>
 {
 	bool success = true;
@@ -181,13 +178,11 @@ struct Read : ff_node_t<MiniTask, Task>
 			{
 				Task *t = new Task(data, fsize, fname, oname, nchunks);
 				ff_send_out(t); // sending to the next stage
-				// std::cout << "Read: " << fname << "\t" << oname << std::endl;
 			}
 			else
 			{
 				Task *t = new Task(data, fsize, fname, fname);
 				ff_send_out(t); // sending to the next stage
-				// std::cout << "Read: " << fname << std::endl;
 			}
 		}
 		return GO_ON;
@@ -203,12 +198,11 @@ struct Read : ff_node_t<MiniTask, Task>
 	}
 };
 
-// 2nd stage
+
 struct Compressor : ff_node_t<Task>
 {
 	Task *svc(Task *task)
 	{
-		// std::cout << "COMPRESSOR" << std::endl;
 		unsigned char *inPtr = reinterpret_cast<unsigned char *>(task->bytes);
 
 		size_t inSize = task->size;
@@ -228,7 +222,6 @@ struct Compressor : ff_node_t<Task>
 		task->size = cmp_len;
 		ff_send_out(task);
 
-		// unmapFile(inPtr, inSize);
 		return GO_ON;
 	}
 	void svc_end()
@@ -241,12 +234,12 @@ struct Compressor : ff_node_t<Task>
 	}
 	bool success = true;
 };
-// 3rd stage
+
+
 struct Write : ff_node_t<Task>
 {
 	Task *svc(Task *task)
 	{
-		// std::cout << "WRITE" << std::endl;
 		const std::string outfile = task->filename + ".zip";
 		// write the compressed data into disk
 
@@ -272,14 +265,13 @@ struct Write : ff_node_t<Task>
 	bool success = true;
 };
 
-// 4th stage
+
 struct FileMerge : ff_node_t<Task>
 {
 	std::map<std::string, int> mapping;
 
 	Task *svc(Task *task)
 	{
-		// std::cout << "MERGE:" << task->original_filename << "\t" << task->filename << std::endl;
 		auto it = mapping.find(task->original_filename);
 		if (it == mapping.end())
 		{
@@ -288,17 +280,10 @@ struct FileMerge : ff_node_t<Task>
 		else
 		{
 			it->second -= 1;
-			// std::cout << it->first << std::endl;
-			// std::cout << it->second << std::endl;
 			if (it->second == 0)
 			{
 				std::string stemp("tar -cf " + task->original_filename + ".zip " + task->original_filename + ".tmp.part*.zip");
-				// std::cout << stemp << std::endl;
 				system(stemp.c_str());
-
-				// std::string delstr("find . -name \"" + rawname + ".part*.zip\" -delete");
-				// std::cout << delstr << std::endl;
-				// system(delstr.c_str());
 			}
 		}
 		delete task;
@@ -310,7 +295,7 @@ static inline void
 usage(const char *argv0)
 {
 	printf("--------------------\n");
-	printf("Usage: NW %s file-or-directory\n", argv0);
+	printf("Usage: NW file-or-directory THRESHOLD\n");
 	printf("\nModes: COMPRESS ONLY\n");
 	printf("--------------------\n");
 }
@@ -327,10 +312,15 @@ int main(int argc, char *argv[])
 	int nw = atoi(argv[1]);
 	size_t threshold = atoll(argv[3]);
 
+	//Stage 1
 	Splitter split(argv[2], threshold);
+	//Stage 2
 	Read reader;
+	//Stage 3
 	Compressor compress;
+	//Stage 4
 	Write writer;
+	//Stage 5
 	FileMerge fmerge;
 
 	ff_Pipe<Task> pipe(compress, writer);
@@ -355,6 +345,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+	//Remove temporary files
 	system("find . -name \"*.tmp.part*\" -delete");
 
 	std::cout << nw;
