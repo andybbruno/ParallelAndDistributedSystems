@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <thread>
-#include "core/farm.cpp"
+#include "core/farm2.cpp"
 #include "core/buffer.cpp"
 #include "lib/tools.cpp"
 #include "lib/utimer.cpp"
@@ -30,10 +30,10 @@ int main(int argc, char *argv[])
     (seed == 0) ? srand(time(NULL)) : srand(seed);
 
     std::vector<int> vec = tools::rand_vec(dim, limit);
-    tools::print(vec);
+    // tools::print(vec);
     Farm::Emitter emitter(vec, nw);
-    Farm::Worker worker;
-    Farm::Collector collector(vec, nw);
+    Farm::Worker worker(vec);
+    Farm::Collector collector(nw);
 
     std::vector<Buffer<Farm::Task>> e2w_buff(nw); // emitter to worker buffer
     std::vector<Buffer<Farm::Task>> w2c_buff(nw); // worker to collector buffer
@@ -138,6 +138,6 @@ int main(int argc, char *argv[])
 
     collect_thr.join();
 
-    tools::print(vec);
+    // tools::print(vec);
     return 0;
 }
