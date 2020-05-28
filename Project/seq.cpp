@@ -51,9 +51,12 @@ int main(int argc, char *argv[])
 
     std::vector<int> vec = tools::rand_vec(dim, limit);
 
-    utimer("SEQ");
+    auto begin = std::chrono::system_clock::now();
     odd_even_sort(vec);
-
+    auto end = std::chrono::system_clock::now();
+    auto elapsed = end - begin;
+    auto musec = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
+    std::cout << musec << std::endl;
     // tools::print(vec);
 
     return 0;

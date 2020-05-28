@@ -1,17 +1,18 @@
 #pragma once
 #include <vector>
+#include <iostream>
 
 namespace tools
 {
-    std::vector<std::pair<int, int>> make_ranges(int dim, int nw)
+    std::vector<std::pair<uint, uint>> make_ranges(int dim, int nw)
     {
-        std::vector<std::pair<int, int>> ranges(nw);
+        std::vector<std::pair<uint, uint>> ranges(nw);
         int delta = dim / nw;
         int mod = dim % nw;
         for (int i = 0; i < nw; i++)
         {
-            int a = (i != 0 ? ranges[i - 1].second + 1 : 0);
-            int b = (i - mod < 0 ? a + delta : a + delta - 1);
+            uint a = (i != 0 ? ranges[i - 1].second + 1 : 0);
+            uint b = (i - mod < 0 ? a + delta : a + delta - 1);
             ranges[i] = std::make_pair(a, b);
         }
         return ranges;
