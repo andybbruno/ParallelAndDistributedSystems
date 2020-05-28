@@ -3,6 +3,7 @@
 #include <deque>
 #include <vector>
 #include <iostream>
+#include <climits>
 #include "farm.hpp"
 
 namespace Farm

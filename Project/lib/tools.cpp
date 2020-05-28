@@ -33,7 +33,7 @@ namespace tools
         std::cout << "\n";
         for (auto a : vec)
         {
-            std::cout << a << " ";
+            std::cout << a << "\t";
         }
         std::cout << "\n";
         std::cout << "\n";

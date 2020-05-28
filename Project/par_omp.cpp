@@ -1,8 +1,10 @@
 #include <iostream>
 #include <vector>
 #include <chrono>
+#include <cassert>
+#include <algorithm>
 #include <omp.h>
-
+#include "lib/utimer.cpp"
 #include "lib/tools.cpp"
 
 void OddEvenSort(std::vector<int> &A, int nw)
@@ -50,12 +52,16 @@ int main(int argc, char *argv[])
     (seed == 0) ? srand(time(NULL)) : srand(seed);
 
     std::vector<int> vec = tools::rand_vec(dim, limit);
-    tools::print(vec);
-    auto begin = std::chrono::system_clock::now();
+    // tools::print(vec);
+    // auto begin = std::chrono::system_clock::now();
+    utimer u(std::to_string(nw) + "," + std::to_string(dim));
     OddEvenSort(vec, nw);
-    auto end = std::chrono::system_clock::now();
-    auto elapsed = end - begin;
-    auto musec = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
-    std::cout << musec << std::endl;
-    tools::print(vec);
+    // auto end = std::chrono::system_clock::now();
+    // auto elapsed = end - begin;
+    // auto musec = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
+    // std::cout << musec << std::endl;
+    // tools::print(vec);
+    assert(std::is_sorted(vec.begin(), vec.end()));
+
+    return 0;
 }
