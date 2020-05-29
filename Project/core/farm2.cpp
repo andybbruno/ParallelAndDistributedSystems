@@ -37,6 +37,7 @@ namespace Farm
         uint nw = 0;
         std::vector<std::pair<uint, uint>> ranges;
         bool even = true;
+        uint print = 0;
 
     public:
         Emitter(std::vector<int> &vec, uint nw) : nw(nw)
@@ -55,6 +56,8 @@ namespace Farm
             {
                 ranges.back().second += mod;
             }
+
+            print = (2 * nw) - 1;
         };
 
         Task next()
@@ -70,6 +73,11 @@ namespace Farm
                     b--;
             }
             curr++;
+            if (print <= (2 * nw) - 1)
+            {
+                std::cout << a << " - " << b << std::endl;
+                --print;
+            }
             return Task(a, b);
         }
 
