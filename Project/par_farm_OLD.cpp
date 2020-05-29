@@ -1,8 +1,6 @@
 #include <iostream>
 #include <vector>
 #include <thread>
-#include <cassert>
-#include <algorithm>
 #include "core/farm2.cpp"
 #include "core/buffer.cpp"
 #include "lib/tools.cpp"
@@ -140,6 +138,6 @@ int main(int argc, char *argv[])
 
     collect_thr.join();
 
-    assert(std::is_sorted(vec.begin(), vec.end()));
+    tools::print(vec);
     return 0;
 }

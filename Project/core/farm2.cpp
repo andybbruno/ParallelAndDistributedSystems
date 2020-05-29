@@ -36,8 +36,12 @@ namespace Farm
         uint curr = 0;
         uint nw = 0;
         std::vector<std::pair<uint, uint>> ranges;
+<<<<<<< HEAD
         bool even = true;
         uint print = 0;
+=======
+        // bool even = true;
+>>>>>>> 223d5065858a26fa1fb76f9c64346de50afc55ed
 
     public:
         Emitter(std::vector<int> &vec, uint nw) : nw(nw)
@@ -64,14 +68,16 @@ namespace Farm
         {
             uint a = ranges[curr].first;
             uint b = ranges[curr].second;
-
-            if (!even)
-            {
-                a++;
-                b++;
-                if (curr == (ranges.size() - 1))
-                    b--;
-            }
+            // if (curr == (ranges.size() - 1))
+            //     b--;
+            
+            // if (!even)
+            // {
+            //     a++;
+            //     b++;
+            //     if (curr == (ranges.size() - 1))
+            //         b--;
+            // }
             curr++;
             if (print <= (2 * nw) - 1)
             {
@@ -89,7 +95,7 @@ namespace Farm
         void restart()
         {
             curr = 0;
-            even = !even;
+            // even = !even;
         }
     };
 
@@ -112,15 +118,15 @@ namespace Farm
                     exchange = true;
                 }
             }
-            // //Odd positions
-            // for (int i = begin + 1; i <= end; i += 2)
-            // {
-            //     if (glob_vec[i] > glob_vec[i + 1])
-            //     {
-            //         std::swap(glob_vec[i], glob_vec[i + 1]);
-            //         exchange = true;
-            //     }
-            // }
+
+            for (int i = t.begin + 1; i < t.end + 1; i += 2)
+            {
+                if (vec[i] > vec[i + 1])
+                {
+                    std::swap(vec[i], vec[i + 1]);
+                    exchange = true;
+                }
+            }
 
             exchange ? (t.swap = true) : (t.swap = false);
             return t;
