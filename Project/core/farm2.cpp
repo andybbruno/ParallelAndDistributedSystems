@@ -36,12 +36,9 @@ namespace Farm
         uint curr = 0;
         uint nw = 0;
         std::vector<std::pair<uint, uint>> ranges;
-<<<<<<< HEAD
         bool even = true;
         uint print = 0;
-=======
         // bool even = true;
->>>>>>> 223d5065858a26fa1fb76f9c64346de50afc55ed
 
     public:
         Emitter(std::vector<int> &vec, uint nw) : nw(nw)
