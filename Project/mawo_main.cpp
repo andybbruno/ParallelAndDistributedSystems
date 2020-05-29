@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
         {
             // std::cout << "WORKER" << std::endl;
             auto job = m2w_buff[wid].receive();
-            auto res = w.compute(job);
+            w.compute(job);
         }
     };
 
