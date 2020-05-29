@@ -8,31 +8,35 @@
 #include "lib/tools.cpp"
 #include "lib/utimer.cpp"
 
-void arg_check(int argc)
+int main(int argc, char *argv[])
 {
     if (argc < 5)
     {
         std::cout << "\nUsage:   #Workers   #Elements   Range   Seed (0 means random)\n\n";
         exit(EXIT_FAILURE);
     }
-}
-
-int main(int argc, char *argv[])
-{
-    arg_check(argc);
 
     int nw = atoi(argv[1]);
     int dim = atoi(argv[2]);
-    int limit = atoi(argv[3]);
-
-    if (limit == 0)
-        limit = INT16_MAX;
-
+    int range = atoi(argv[3]);
+    if (range == 0)
+        range = INT16_MAX;
     int seed = atoi(argv[4]);
     (seed == 0) ? srand(time(NULL)) : srand(seed);
 
-    std::vector<int> vec = tools::rand_vec(dim, limit);
-    // tools::print(vec);
+    if ((nw >= dim))
+    {
+        std::cout << "\n Too many workers! \n\n";
+        exit(EXIT_FAILURE);
+    }
+    if (range < 0)
+    {
+        std::cout << "\n Range must be either positive or '0' for random! \n\n";
+        exit(EXIT_FAILURE);
+    }
+
+    std::vector<int> vec = tools::rand_vec(dim, range);
+    tools::print(vec);
     Farm::Emitter emitter(vec, nw);
     Farm::Worker worker(vec);
     Farm::Collector collector(nw);
@@ -140,7 +144,7 @@ int main(int argc, char *argv[])
 
     collect_thr.join();
 
-    // tools::print(vec);
+    tools::print(vec);
     assert(std::is_sorted(vec.begin(), vec.end()));
     return 0;
 }

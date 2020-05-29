@@ -1,5 +1,4 @@
 #pragma once
-#include <mutex>
 #include <deque>
 #include <vector>
 #include <iostream>
@@ -10,11 +9,11 @@ namespace Farm
 {
     struct Task
     {
-        uint begin;
-        uint end;
+        int begin;
+        int end;
         bool swap;
 
-        Task(uint a = 0, uint b = 0, bool s = false) : begin(a), end(b) {}
+        Task(int a = 0, int b = 0, bool s = false) : begin(a), end(b) {}
 
         inline bool operator==(const Task &rhs)
         {
@@ -59,8 +58,9 @@ namespace Farm
             //     ranges.back().second += mod;
             // }
 
-            ranges_even = tools::make_ranges(vec.size(), nw);
-            ranges_odd = tools::make_ranges(vec.size(), nw, 1);
+            auto n = vec.size();
+            ranges_even = tools::make_ranges(n - 1, nw, 2, 0);
+            ranges_odd = tools::make_ranges(n - 1, nw, 2, 1);
 
             // for (auto x : ranges_even)
             // {
@@ -78,8 +78,8 @@ namespace Farm
 
         Task next()
         {
-            uint a;
-            uint b;
+            int a;
+            int b;
 
             if (even)
             {
@@ -136,7 +136,7 @@ namespace Farm
             std::vector<int> tmp;
             for (int i = t.begin; i <= t.end; i += 2)
             {
-                tmp.push_back(i);
+                // tmp.push_back(i);
                 if (vec[i] > vec[i + 1])
                 {
                     std::swap(vec[i], vec[i + 1]);
