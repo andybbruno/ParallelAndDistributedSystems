@@ -35,6 +35,17 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
+    std::vector<uint> turn_list(nw);
+    bool first;
+    for (int i = 0; i < nw; i++)
+    {
+        for (int k = nw; k <= i; i++)
+        {
+            turn_list.push_back(i);
+            turn_list.push_back(k);
+        }
+    }
+
     std::vector<int> vec = tools::rand_vec(dim, range);
     bool swap = true;
     MaWo::Master master(vec.size(), nw);

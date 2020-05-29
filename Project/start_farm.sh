@@ -8,7 +8,7 @@ echo "Start: FARM"
 echo ""
 echo ""
 echo ""
-for nw in 1 2 4 8 16 32 64 128 254
+for nw in 1 2 5 10 15 30 50 100 150 200
     do
     ./farm_main.o $nw 100000 999999 1
 done

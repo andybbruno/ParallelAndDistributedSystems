@@ -81,11 +81,8 @@ namespace MaWo
         bool compute(Task &t)
         {
             bool exchange = false;
-
-            std::vector<int> tmp;
             for (int i = t.begin; i <= t.end; i += 2)
             {
-                // tmp.push_back(i);
                 if (vec[i] > vec[i + 1])
                 {
                     std::swap(vec[i], vec[i + 1]);
@@ -95,4 +92,5 @@ namespace MaWo
             return exchange;
         }
     };
+
 }; // namespace MaWo
