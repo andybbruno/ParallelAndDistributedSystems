@@ -32,10 +32,9 @@ namespace MaWo
         std::vector<std::pair<uint, uint>> ranges_even;
         bool even = true;
         uint print = 0;
-        bool &swap;
 
     public:
-        Master(std::vector<int> &vec, bool &swap, uint nw) : swap(swap), nw(nw)
+        Master(std::vector<int> &vec, uint nw) : nw(nw)
         {
             auto n = vec.size();
             ranges_even = tools::make_ranges(n - 1, nw, 2, 0);
