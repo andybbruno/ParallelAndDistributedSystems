@@ -9,59 +9,51 @@
 
 void OddEvenSort(std::vector<int> &A, int nw)
 {
-    std::vector<std::vector<int>> vec_one(nw);
-    std::vector<std::vector<int>> vec_two(nw);
+    // std::vector<std::vector<int>> vec_one(nw);
+    // std::vector<std::vector<int>> vec_two(nw);
     bool swap = true;
     int N = A.size();
 
-    // while (swap)
-    // {
-    swap = false;
+    while (swap)
+    {
+        swap = false;
 #pragma omp parallel num_threads(nw)
-    {
-#pragma omp for
-        for (int i = 0; i < N - 1; i += 2)
         {
-            vec_one[omp_get_thread_num()].push_back(i);
-            if (A[i] > A[i + 1])
+#pragma omp for
+            for (int i = 0; i < N - 1; i += 2)
             {
-                std::swap(A[i], A[i + 1]);
-                swap = true;
+                // vec_one[omp_get_thread_num()].push_back(i);
+                if (A[i] > A[i + 1])
+                {
+                    std::swap(A[i], A[i + 1]);
+                    swap = true;
+                }
+            }
+#pragma omp for
+            for (int i = 1; i < N - 1; i += 2)
+            {
+                // vec_two[omp_get_thread_num()].push_back(i);
+                if (A[i] > A[i + 1])
+                {
+                    std::swap(A[i], A[i + 1]);
+                    swap = true;
+                }
             }
         }
-#pragma omp for
-        for (int i = 1; i < N - 1; i += 2)
-        {
-            vec_two[omp_get_thread_num()].push_back(i);
-            if (A[i] > A[i + 1])
-            {
-                std::swap(A[i], A[i + 1]);
-                swap = true;
-            }
-        }
-    }
 
-    for (auto v : vec_one)
-    {
-        for (auto x : v)
-        {
-            std::cout << x << " - ";
-        }
-        std::cout << "\n";
+        // for (auto v : vec_one)
+        // {
+        //     std::cout << v[0] << " - " << v.back() << "\n";
+        // }
+        // std::cout << "*******" << std::endl;
+        // for (auto v : vec_two)
+        // {
+        //     std::cout << v[0] << " - " << v.back() << "\n";
+        // }
+        // std::cout << std::endl
+        //           << std::endl
+        //           << std::endl;
     }
-    std::cout << "*******" << std::endl;
-    for (auto v : vec_two)
-    {
-        for (auto x : v)
-        {
-            std::cout << x << " - ";
-        }
-        std::cout << "\n";
-    }
-    std::cout << std::endl
-              << std::endl
-              << std::endl;
-    // }
 }
 int main(int argc, char *argv[])
 {

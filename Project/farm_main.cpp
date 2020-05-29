@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     }
 
     std::vector<int> vec = tools::rand_vec(dim, range);
-    tools::print(vec);
+    // tools::print(vec);
     Farm::Emitter emitter(vec, nw);
     Farm::Worker worker(vec);
     Farm::Collector collector(nw);
@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
 
     collect_thr.join();
 
-    tools::print(vec);
+    // tools::print(vec);
     assert(std::is_sorted(vec.begin(), vec.end()));
     return 0;
 }
