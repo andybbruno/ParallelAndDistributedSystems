@@ -2,13 +2,13 @@
 
 echo ""
 echo ""
-echo "Start: OMP"
+echo "Start: FastFlow"
 echo ""
 echo ""
 echo ""
 for nw in 2 5 10 15 20 25 30
     do
-    ./omp_main.o $nw 100000 0 1 >> res/omp.txt
+    ./ff.o $nw 100000 0 1  >> res/ff.txt
 done
 echo ""
 echo ""

@@ -6,10 +6,9 @@
 #include <ff/utils.hpp>
 #include <ff/parallel_for.hpp>
 #include "lib/ff_tools.cpp"
+#include "lib/utimer.cpp"
 
 using namespace ff;
-using ull = unsigned long long;
-using Range = std::pair<ull, ull>;
 
 struct Task
 {
@@ -25,7 +24,7 @@ struct Task
     }
 };
 
-struct Master : ff_node_t<Task>
+struct Master : ff_node_t<bool, Task>
 {
     uint curr = 0;
     uint nw = 0;
@@ -35,7 +34,14 @@ struct Master : ff_node_t<Task>
     bool even = true;
     bool swap = true;
 
-    Task *generateTask()
+    Master(uint n, uint nw) : nw(nw)
+    {
+        ranges_even = tools::make_ranges(n - 1, nw, 2, 0);
+        ranges_odd = tools::make_ranges(n - 1, nw, 2, 1);
+        received = nw;
+    };
+
+    inline Task *generateTask()
     {
         int a;
         int b;
@@ -55,44 +61,67 @@ struct Master : ff_node_t<Task>
         return new Task(a, b, swap);
     }
 
-    void restart()
+    inline void restart()
     {
         curr = 0;
         even = !even;
+        received = 0;
+        swap = false;
     }
-
-    Master(uint n, uint nw) : nw(nw)
-    {
-        ranges_even = tools::make_ranges(n - 1, nw, 2, 0);
-        ranges_odd = tools::make_ranges(n - 1, nw, 2, 1);
-    };
 
     Task *svc(bool *exchange)
     {
-        swap |= *exchange;
-        if (++received == nw)
+        // std::cout << "MASTER" << std::endl;
+        if (exchange != nullptr)
         {
-            if ((swap == false) && (even == false))
+            swap |= *exchange;
+            if (++received == nw)
             {
-                return EOS;
-            }
-            else
-            {
-                for (int i = 0; i < nw; i++)
+                if ((swap == false) && (even == false))
                 {
-                    ff_send_out(generateTask());
+                    return EOS;
                 }
-                restart();
+                else
+                {
+                    for (int i = 0; i < nw; i++)
+                    {
+                        ff_send_out(generateTask());
+                    }
+                    restart();
+                }
             }
+        }
+        else
+        {
+            for (int i = 0; i < nw; i++)
+            {
+                ff_send_out(generateTask());
+            }
+            restart();
         }
         return GO_ON;
     }
 };
 
-struct Worker : ff_node_t<Task>
+struct Worker : ff_node_t<Task, bool>
 {
-    Task *svc(Task *task)
+    std::vector<int> &vec;
+    bool exchange;
+
+    Worker(std::vector<int> &vec) : vec(vec) {}
+    bool *svc(Task *t)
     {
+        // std::cout << "WORKER" << std::endl;
+        bool exchange = false;
+        for (int i = t->begin; i <= t->end; i += 2)
+        {
+            if (vec[i] > vec[i + 1])
+            {
+                std::swap(vec[i], vec[i + 1]);
+                exchange = true;
+            }
+        }
+        return new bool(exchange);
     }
 };
 
@@ -124,6 +153,25 @@ int main(int argc, char *argv[])
     }
 
     std::vector<int> vec = tools::rand_vec(dim, range);
+    // tools::print(vec);
+    Master master(dim, nw);
+    std::vector<std::unique_ptr<ff_node>> W;
+    for (size_t i = 0; i < nw; ++i)
+    {
+        W.push_back(make_unique<Worker>(vec));
+    }
 
+    ff_Farm<Task> farm(std::move(W), master);
+    farm.remove_collector();
+    farm.wrap_around();
+
+    utimer u(std::to_string(nw) + "," + std::to_string(dim));
+    if (farm.run_and_wait_end() < 0)
+    {
+        error("running farm");
+        return -1;
+    }
+    
+    assert(std::is_sorted(vec.begin(), vec.end()));
     return 0;
 }
