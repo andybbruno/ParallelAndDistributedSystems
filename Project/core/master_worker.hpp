@@ -6,9 +6,9 @@ public:
   virtual bool hasNext() = 0;
 };
 
-template <typename IN>
+template <typename IN, typename OUT>
 class IWorker
 {
 public:
-  virtual void compute(IN &x) = 0;
+  virtual OUT compute(IN &x) = 0;
 };

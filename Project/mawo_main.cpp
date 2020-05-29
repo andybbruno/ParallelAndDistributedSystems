@@ -37,10 +37,11 @@ int main(int argc, char *argv[])
 
     std::vector<int> vec = tools::rand_vec(dim, range);
     bool swap = true;
-    MaWo::Master master(vec, swap, nw);
-    MaWo::Worker worker(vec, swap);
+    MaWo::Master master(vec.size(), nw);
+    MaWo::Worker worker(vec);
 
     std::vector<Buffer<MaWo::Task>> m2w_buff(nw); // master to worker buffer
+    std::vector<Buffer<bool>> w2m_buff(nw);       // master to worker buffer
 
     auto mst = [&](MaWo::Master m) {
         while (swap)
@@ -53,13 +54,46 @@ int main(int argc, char *argv[])
                 m2w_buff[turn].send(job);
                 turn = (++turn) % nw;
             }
+            turn = 0;
+            uint received = 0;
+
+            while (true)
+            {
+                if (w2m_buff[turn].empty())
+                {
+                    turn = (++turn) % nw;
+                    continue;
+                }
+                bool res = w2m_buff[turn].receive();
+                swap |= res;
+
+                if (++received == nw)
+                    break;
+            }
+
             m.restart();
+
             while (m.hasNext())
             {
                 auto job = m.next();
                 m2w_buff[turn].send(job);
                 turn = (++turn) % nw;
             }
+            received = 0;
+            while (true)
+            {
+                if (w2m_buff[turn].empty())
+                {
+                    turn = (++turn) % nw;
+                    continue;
+                }
+                bool res = w2m_buff[turn].receive();
+                swap |= res;
+
+                if (++received == nw)
+                    break;
+            }
+            m.restart();
         }
 
         for (int i = 0; i < nw; i++)
@@ -73,7 +107,12 @@ int main(int argc, char *argv[])
         {
             // std::cout << "WORKER" << std::endl;
             auto job = m2w_buff[wid].receive();
-            w.compute(job);
+            if (job == MaWo::EOS)
+            {
+                break;
+            }
+            bool res = w.compute(job);
+            w2m_buff[wid].send(res);
         }
     };
 

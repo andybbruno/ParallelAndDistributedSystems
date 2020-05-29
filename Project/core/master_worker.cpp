@@ -34,9 +34,8 @@ namespace MaWo
         uint print = 0;
 
     public:
-        Master(std::vector<int> &vec, uint nw) : nw(nw)
+        Master(uint n, uint nw) : nw(nw)
         {
-            auto n = vec.size();
             ranges_even = tools::make_ranges(n - 1, nw, 2, 0);
             ranges_odd = tools::make_ranges(n - 1, nw, 2, 1);
         };
@@ -72,15 +71,14 @@ namespace MaWo
         }
     };
 
-    class Worker : IWorker<Task>
+    class Worker : IWorker<Task, bool>
     {
     private:
         std::vector<int> &vec;
-        bool &swap;
 
     public:
-        Worker(std::vector<int> &vec, bool &swap) : vec(vec), swap(swap) {}
-        void compute(Task &t)
+        Worker(std::vector<int> &vec) : vec(vec) {}
+        bool compute(Task &t)
         {
             bool exchange = false;
 
@@ -94,7 +92,7 @@ namespace MaWo
                     exchange = true;
                 }
             }
-            swap = exchange;
+            return exchange;
         }
     };
 }; // namespace MaWo
