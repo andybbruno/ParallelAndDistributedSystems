@@ -8,9 +8,9 @@ echo "Start: OMP"
 echo ""
 echo ""
 echo ""
-for nw in 1 4 8 16 32 64 128 256
+for nw in 2 5 10 20 50 100 200
     do
-    ./par_omp.o $nw 10000 999999 123
+    ./par_omp.o $nw 100000 999999 0
 done
 echo ""
 echo ""

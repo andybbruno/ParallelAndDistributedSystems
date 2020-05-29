@@ -8,8 +8,6 @@
 
 namespace Farm
 {
-    std::mutex mtx;
-
     struct Task
     {
         uint begin;
