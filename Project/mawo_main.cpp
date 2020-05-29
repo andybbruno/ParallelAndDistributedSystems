@@ -2,6 +2,7 @@
 #include <vector>
 #include <thread>
 #include <cassert>
+#include <random>
 #include <algorithm>
 #include "core/master_worker.cpp"
 #include "core/buffer.cpp"
@@ -33,17 +34,6 @@ int main(int argc, char *argv[])
     {
         std::cout << "\n Range must be either positive or '0' for random! \n\n";
         exit(EXIT_FAILURE);
-    }
-
-    std::vector<uint> turn_list(nw);
-    bool first;
-    for (int i = 0; i < nw; i++)
-    {
-        for (int k = nw; k <= i; i++)
-        {
-            turn_list.push_back(i);
-            turn_list.push_back(k);
-        }
     }
 
     std::vector<int> vec = tools::rand_vec(dim, range);
@@ -132,9 +122,14 @@ int main(int argc, char *argv[])
     std::thread mst_thr(mst, master);
 
     std::vector<std::thread> tids;
+    std::vector<uint> ivec(nw);
+    std::iota(ivec.begin(), ivec.end(), 0);
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(ivec.begin(), ivec.end(),g);
     for (int i = 0; i < nw; i++)
     {
-        tids.push_back(std::thread(work, worker, i));
+        tids.push_back(std::thread(work, worker, ivec[i]));
     }
 
     mst_thr.join();
