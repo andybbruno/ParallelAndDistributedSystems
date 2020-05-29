@@ -3,7 +3,7 @@
 #include <thread>
 #include <cassert>
 #include <algorithm>
-#include "core/farm2.cpp"
+#include "core/farm.cpp"
 #include "core/buffer.cpp"
 #include "lib/tools.cpp"
 #include "lib/utimer.cpp"
@@ -140,6 +140,7 @@ int main(int argc, char *argv[])
 
     collect_thr.join();
 
+    // tools::print(vec);
     assert(std::is_sorted(vec.begin(), vec.end()));
     return 0;
 }

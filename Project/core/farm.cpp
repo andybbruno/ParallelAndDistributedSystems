@@ -3,20 +3,20 @@
 #include <deque>
 #include <vector>
 #include <iostream>
-#include <climits>
 #include "farm.hpp"
+#include "../lib/tools.cpp"
 
 namespace Farm
 {
+    std::mutex mtx;
+
     struct Task
     {
-        std::deque<uint> swaps;
         uint begin;
         uint end;
+        bool swap;
 
-        Task() : begin(0), end(0) {}
-
-        Task(uint a, uint b) : begin(a), end(b) {}
+        Task(uint a = 0, uint b = 0, bool s = false) : begin(a), end(b) {}
 
         inline bool operator==(const Task &rhs)
         {
@@ -24,7 +24,7 @@ namespace Farm
         }
     };
 
-    Task EOS(UINT_MAX, UINT_MAX);
+    Task EOS(-1, -1, 0);
 
     enum C2E_Flag
     {
@@ -36,43 +36,78 @@ namespace Farm
     class Emitter : IEmitter<Task>
     {
     private:
-        std::vector<int> &vec;
         uint curr = 0;
         uint nw = 0;
-        std::vector<std::pair<uint, uint>> ranges;
+        std::vector<std::pair<uint, uint>> ranges_odd;
+        std::vector<std::pair<uint, uint>> ranges_even;
         bool even = true;
+        uint print = 0;
 
     public:
-        Emitter(std::vector<int> &vec, uint nw) : vec(vec), nw(nw)
+        Emitter(std::vector<int> &vec, uint nw) : nw(nw)
         {
-            uint delta = vec.size() / nw;
-            uint mod = vec.size() % nw;
+            // uint delta = vec.size() / nw;
+            // uint mod = vec.size() % nw;
 
-            for (int i = 0; i < nw; i++)
-            {
-                uint a = (i * delta);
-                uint b = a + delta - 1;
+            // for (int i = 0; i < nw; i++)
+            // {
+            //     uint a = (i * delta);
+            //     uint b = a + delta - 1;
 
-                ranges.push_back(std::make_pair(a, b));
-            }
-            if (mod > 0)
-            {
-                ranges.back().second += mod;
-            }
+            //     ranges.push_back(std::make_pair(a, b));
+            // }
+            // if (mod > 0)
+            // {
+            //     ranges.back().second += mod;
+            // }
+
+            ranges_even = tools::make_ranges(vec.size(), nw);
+            ranges_odd = tools::make_ranges(vec.size(), nw, 1);
+
+            // for (auto x : ranges_even)
+            // {
+            //     std::cout << x.first << " - " << x.second << "\n";
+            // }
+            // std::cout << "*******" << std::endl;
+            // for (auto x : ranges_odd)
+            // {
+            //     std::cout << x.first << " - " << x.second << "\n";
+            // }
+            // std::cout << std::endl;
+            // std::cout << std::endl;
+            // std::cout << std::endl;
         };
 
         Task next()
         {
-            int a = ranges[curr].first;
-            int b = ranges[curr].second;
+            uint a;
+            uint b;
 
-            if (!even)
+            if (even)
             {
-                a++;
-                b++;
-                if (curr == (ranges.size() - 1))
-                    b--;
+                a = ranges_even[curr].first;
+                b = ranges_even[curr].second;
             }
+            else
+            {
+                a = ranges_odd[curr].first;
+                b = ranges_odd[curr].second;
+            }
+
+            // if (!even)
+            // {
+            //     a++;
+            //     b++;
+            //     if (curr == (ranges.size() - 1))
+            //         b--;
+            // }
+
+            // if (print <= (2 * nw) - 1)
+            // {
+            //     std::cout << a << " - " << b << std::endl;
+            //     --print;
+            // }
+
             curr++;
             return Task(a, b);
         }
@@ -92,33 +127,42 @@ namespace Farm
     class Worker : IWorker<Task, Task>
     {
     private:
-        std::vector<int> const &v;
+        std::vector<int> &vec;
 
     public:
-        Worker(std::vector<int> const &v) : v(v) {}
-
+        Worker(std::vector<int> &vec) : vec(vec) {}
         Task compute(Task &t)
         {
             bool exchange = false;
 
-            for (int i = t.begin; i < t.end; i += 2)
+            std::vector<int> tmp;
+            for (int i = t.begin; i <= t.end; i += 2)
             {
-                if (v[i] > v[i + 1])
+                tmp.push_back(i);
+                if (vec[i] > vec[i + 1])
                 {
-                    t.swaps.push_back(i);
+                    std::swap(vec[i], vec[i + 1]);
                     exchange = true;
                 }
             }
-            // //Odd positions
-            // for (int i = begin + 1; i <= end; i += 2)
+            // mtx.lock();
+            // for (auto z : tmp)
             // {
-            //     if (glob_vec[i] > glob_vec[i + 1])
+            //     std::cout << z << " - ";
+            // }
+            // std::cout << std::endl;
+            // mtx.unlock();
+
+            // for (int i = t.begin + 1; i < t.end + 1; i += 2)
+            // {
+            //     if (vec[i] > vec[i + 1])
             //     {
-            //         std::swap(glob_vec[i], glob_vec[i + 1]);
+            //         std::swap(vec[i], vec[i + 1]);
             //         exchange = true;
             //     }
             // }
 
+            exchange ? (t.swap = true) : (t.swap = false);
             return t;
         }
     };
@@ -128,43 +172,27 @@ namespace Farm
     private:
         uint nw;
         uint swap = 0;
-        std::vector<int> &vec;
-        std::deque<Task> dq;
-
-        inline void recombine()
-        {
-            std::vector<int> res(vec);
-
-            for (int i = 0; i <= dq.size(); i++)
-            {
-                auto x = dq.front();
-                dq.pop_front();
-                for (auto sw : x.swaps)
-                {
-                    std::swap(res[sw], res[sw + 1]);
-                }
-            }
-            vec = res;
-        }
+        uint collected = 0;
 
     public:
-        Collector(std::vector<int> &vec, uint nw) : vec(vec), nw(nw) {}
+        Collector(uint nw) : nw(nw) {}
 
         C2E_Flag collect(Task const &t)
         {
-            dq.push_back(t);
-            swap += t.swaps.size();
+            swap += t.swap;
+            collected++;
             // std::cout << "swap " << swap << std::endl;
             // std::cout << "size " << dq.size() << std::endl;
-            if ((swap > 0) && (dq.size() == nw))
+            if ((swap > 0) && (collected == nw))
             {
                 swap = 0;
-                recombine();
+                collected = 0;
                 return RESTART;
             }
-            else if ((swap == 0) && (dq.size() == nw))
+            else if ((swap == 0) && (collected == nw))
             {
-                recombine();
+                swap = 0;
+                collected = 0;
                 return EXIT;
             }
             else

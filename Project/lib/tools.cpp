@@ -1,18 +1,20 @@
 #pragma once
 #include <vector>
 #include <iostream>
+#include <algorithm>
 
 namespace tools
 {
-    std::vector<std::pair<uint, uint>> make_ranges(int dim, int nw)
+    std::vector<std::pair<uint, uint>> make_ranges(uint dim, uint nw, int offset = 0)
     {
         std::vector<std::pair<uint, uint>> ranges(nw);
-        int delta = dim / nw;
-        int mod = dim % nw;
+        uint delta = dim / nw;
+        uint mod = dim % nw;
         for (int i = 0; i < nw; i++)
         {
-            uint a = (i != 0 ? ranges[i - 1].second + 1 : 0);
+            uint a = (i != 0 ? ranges[i - 1].second + 1 : offset);
             uint b = (i - mod < 0 ? a + delta : a + delta - 1);
+            b = std::min(dim, b);
             ranges[i] = std::make_pair(a, b);
         }
         return ranges;

@@ -9,7 +9,8 @@
 
 void OddEvenSort(std::vector<int> &A, int nw)
 {
-
+    std::vector<std::vector<int>> vec_one(nw);
+    std::vector<std::vector<int>> vec_two(nw);
     bool swap = true;
     int N = A.size();
 
@@ -21,6 +22,7 @@ void OddEvenSort(std::vector<int> &A, int nw)
 #pragma omp for
             for (int i = 0; i < N - 1; i += 2)
             {
+                vec_one[omp_get_thread_num()].push_back(i);
                 if (A[i] > A[i + 1])
                 {
                     std::swap(A[i], A[i + 1]);
@@ -30,6 +32,7 @@ void OddEvenSort(std::vector<int> &A, int nw)
 #pragma omp for
             for (int i = 1; i < N - 1; i += 2)
             {
+                vec_two[omp_get_thread_num()].push_back(i);
                 if (A[i] > A[i + 1])
                 {
                     std::swap(A[i], A[i + 1]);
@@ -37,6 +40,19 @@ void OddEvenSort(std::vector<int> &A, int nw)
                 }
             }
         }
+
+        for (auto v : vec_one)
+        {
+            std::cout << v[0] << " - " << v.back() << "\n";
+        }
+        std::cout << "*******" << std::endl;
+        for (auto v : vec_two)
+        {
+            std::cout << v[0] << " - " << v.back() << "\n";
+        }
+        std::cout << std::endl
+                  << std::endl
+                  << std::endl;
     }
 }
 int main(int argc, char *argv[])
@@ -52,7 +68,7 @@ int main(int argc, char *argv[])
     (seed == 0) ? srand(time(NULL)) : srand(seed);
 
     std::vector<int> vec = tools::rand_vec(dim, limit);
-    // tools::print(vec);
+    tools::print(vec);
     // auto begin = std::chrono::system_clock::now();
     utimer u(std::to_string(nw) + "," + std::to_string(dim));
     OddEvenSort(vec, nw);
@@ -60,7 +76,7 @@ int main(int argc, char *argv[])
     // auto elapsed = end - begin;
     // auto musec = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
     // std::cout << musec << std::endl;
-    // tools::print(vec);
+    tools::print(vec);
     assert(std::is_sorted(vec.begin(), vec.end()));
 
     return 0;
