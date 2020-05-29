@@ -31,7 +31,6 @@ namespace MaWo
         std::vector<std::pair<uint, uint>> ranges_odd;
         std::vector<std::pair<uint, uint>> ranges_even;
         bool even = true;
-        uint print = 0;
 
     public:
         Master(uint n, uint nw) : nw(nw)

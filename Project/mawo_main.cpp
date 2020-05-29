@@ -5,7 +5,7 @@
 #include <random>
 #include <algorithm>
 #include "core/master_worker.cpp"
-#include "core/buffer.cpp"
+#include "lib/buffer.cpp"
 #include "lib/tools.cpp"
 #include "lib/utimer.cpp"
 

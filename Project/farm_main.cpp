@@ -4,7 +4,7 @@
 #include <cassert>
 #include <algorithm>
 #include "core/farm.cpp"
-#include "core/buffer.cpp"
+#include "lib/buffer.cpp"
 #include "lib/tools.cpp"
 #include "lib/utimer.cpp"
 
