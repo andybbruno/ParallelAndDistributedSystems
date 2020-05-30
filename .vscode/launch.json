@@ -11,13 +11,13 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${fileDirname}/${fileBasenameNoExtension}.o",
-            "args": ["3", "10", "30", "123"],
+            "args": ["2", "10", "30", "123"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": false,
             "MIMode": "lldb",
-            "miDebuggerPath":"/Applications/Xcode_10.3.app/Contents/Developer/usr/bin/lldb-mi",
+            // "miDebuggerPath":"/Applications/Xcode_10.3.app/Contents/Developer/usr/bin/lldb-mi",
             "preLaunchTask": "g++ build local"
         },
         {
@@ -58,6 +58,19 @@
                     "ignoreFailures": true
                 }
             ]
+        },
+        {
+            "name": "g++ Local NO COMPILE",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${fileDirname}/${fileBasenameNoExtension}.o",
+            "args": ["1", "10", "30", "123"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb",
+            // "miDebuggerPath":"/Applications/Xcode_10.3.app/Contents/Developer/usr/bin/lldb-mi",
         },
     ]
 }

@@ -67,7 +67,11 @@ namespace Farm
             }
 
             curr++;
-            auto task_vec = new std::vector<int>(vec.begin() + a, vec.begin() + b);
+            auto begin = vec.begin() + a;
+            auto end = vec.begin() + b + 2;
+            
+
+            auto task_vec = new std::vector<int>(begin, end);
             return Task(task_vec, a, b);
         }
 
@@ -90,12 +94,12 @@ namespace Farm
         {
             bool exchange = false;
 
-            for (int i = tsk.begin; i <= tsk.end; i += 2)
+            std::vector<int> &list = *tsk.list;
+            for (int i = 0; i < list.size(); i += 2)
             {
-                // tmp.push_back(i);
-                if (tsk.list[i] > tsk.list[i + 1])
+                if (list[i] > list[i + 1])
                 {
-                    std::swap(tsk.list[i], tsk.list[i + 1]);
+                    std::swap(list[i], list[i + 1]);
                     exchange = true;
                 }
             }
@@ -122,11 +126,13 @@ namespace Farm
 
             if (t.swap)
             {
-                swap += t.swap;
-                auto list = t.list;
-                for (int i = t.begin; i <= t.end; i += 2)
+                swap++;
+                std::vector<int> &list = *t.list;
+                int k = 0;
+                for (int i = t.begin; i < t.begin + list.size(); i++)
                 {
-                    vec[i] = (*list)[i];
+                    vec[i] = list[k];
+                    k++;
                 }
             }
             if ((swap > 0) && (collected == nw))
