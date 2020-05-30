@@ -2,10 +2,13 @@ CXX 		= g++
 FLAGS 		= -O3 -std=c++17 -pthread
 OMPFLAG		= -fopenmp
 
-TARGETS = farm_main mawo_main omp_main
+TARGETS = farm_main mawo_main omp_main seq_main
 
 all		: $(TARGETS)
 
+
+seq_main:
+	$(CXX) $(FLAGS) seq_main.cpp -o seq_main.o
 farm_main:
 	$(CXX) $(FLAGS) farm_main.cpp -o farm_main.o
 mawo_main:
