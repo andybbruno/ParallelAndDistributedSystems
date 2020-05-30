@@ -31,23 +31,33 @@ void odd_even_sort(std::vector<int> &arr)
         }
     }
 }
-void arg_check(int argc)
-{
-    if (argc < 4)
-    {
-        std::cout << "\nUsage:   #Elements   Range   Seed (0 means random)\n\n";
-        exit(EXIT_FAILURE);
-    }
-}
 
 int main(int argc, char *argv[])
 {
-    arg_check(argc);
+    if (argc < 5)
+    {
+        std::cout << "\nUsage:   #Workers   #Elements   Range   Seed (0 means random)\n\n";
+        exit(EXIT_FAILURE);
+    }
 
-    int dim = atoi(argv[1]);
-    int limit = atoi(argv[2]);
-    int seed = atoi(argv[3]);
+    int nw = atoi(argv[1]);
+    int dim = atoi(argv[2]);
+    int range = atoi(argv[3]);
+    if (range == 0)
+        range = INT16_MAX;
+    int seed = atoi(argv[4]);
     (seed == 0) ? srand(time(NULL)) : srand(seed);
+
+    if ((nw >= dim))
+    {
+        std::cout << "\n Too many workers! \n\n";
+        exit(EXIT_FAILURE);
+    }
+    if (range < 0)
+    {
+        std::cout << "\n Range must be either positive or '0' for random! \n\n";
+        exit(EXIT_FAILURE);
+    }
 
     std::vector<int> vec = tools::rand_vec(dim, limit);
 
