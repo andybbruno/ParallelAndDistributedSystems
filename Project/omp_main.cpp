@@ -54,6 +54,6 @@ int main(int argc, char *argv[])
     utimer u(std::to_string(nw) + "," + std::to_string(dim));
     
     OddEvenSort(vec, nw);
-    
+    // assert(std::is_sorted(vec.begin(), vec.end()));
     return 0;
 }

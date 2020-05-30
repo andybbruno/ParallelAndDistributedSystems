@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     auto musec = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
     std::cout << musec << std::endl;
     // tools::print(vec);
-    assert(std::is_sorted(vec.begin(), vec.end()));
+    // assert(std::is_sorted(vec.begin(), vec.end()));
 
     return 0;
 }

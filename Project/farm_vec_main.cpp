@@ -145,6 +145,6 @@ int main(int argc, char *argv[])
     collect_thr.join();
 
     // tools::print(vec);
-    assert(std::is_sorted(vec.begin(), vec.end()));
+    // assert(std::is_sorted(vec.begin(), vec.end()));
     return 0;
 }

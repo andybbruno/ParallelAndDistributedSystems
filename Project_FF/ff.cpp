@@ -172,6 +172,6 @@ int main(int argc, char *argv[])
         return -1;
     }
     
-    assert(std::is_sorted(vec.begin(), vec.end()));
+    // assert(std::is_sorted(vec.begin(), vec.end()));
     return 0;
 }
