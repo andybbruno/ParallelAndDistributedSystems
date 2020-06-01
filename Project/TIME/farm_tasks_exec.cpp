@@ -3,10 +3,10 @@
 #include <thread>
 #include <cassert>
 #include <algorithm>
-#include "core/FarmT.cpp"
-#include "lib/buffer.cpp"
-#include "lib/tools.cpp"
-#include "lib/utimer.cpp"
+#include "../core/FarmT.cpp"
+#include "../lib/buffer.cpp"
+#include "../lib/tools.cpp"
+#include "../lib/utimer.cpp"
 
 int main(int argc, char *argv[])
 {
@@ -36,7 +36,13 @@ int main(int argc, char *argv[])
     }
 
     std::vector<int> vec = tools::rand_vec(dim, range);
+
     // tools::print(vec);
+
+    std::vector<long long> emitter_time;
+    std::vector<long long> worker_time;
+    std::vector<long long> collector_time;
+
     Farm::Emitter emitter(vec, nw);
     Farm::Worker worker(vec);
     Farm::Collector collector(nw);
@@ -48,6 +54,8 @@ int main(int argc, char *argv[])
     auto emit = [&](Farm::Emitter e) {
         while (true)
         {
+            auto begin = std::chrono::system_clock::now();
+
             int turn = 0;
             while (e.hasNext())
             {
@@ -64,6 +72,11 @@ int main(int argc, char *argv[])
             {
                 break;
             }
+
+            auto end = std::chrono::system_clock::now();
+            auto elapsed = end - begin;
+            auto musec = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
+            emitter_time.push_back(musec);
         }
 
         for (int i = 0; i < nw; i++)
@@ -75,6 +88,8 @@ int main(int argc, char *argv[])
     auto work = [&](Farm::Worker w, int wid) {
         while (true)
         {
+            auto begin = std::chrono::system_clock::now();
+
             auto job = e2w_buff[wid].receive();
             if (job == Farm::EOS)
             {
@@ -83,6 +98,11 @@ int main(int argc, char *argv[])
             }
             auto res = w.compute(job);
             w2c_buff[wid].send(res);
+
+            auto end = std::chrono::system_clock::now();
+            auto elapsed = end - begin;
+            auto musec = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
+            worker_time.push_back(musec);
         }
     };
 
@@ -91,6 +111,7 @@ int main(int argc, char *argv[])
         uint collected = 0;
         while (true)
         {
+            auto begin = std::chrono::system_clock::now();
             if (w2c_buff[turn].empty())
             {
                 turn = (++turn) % nw;
@@ -114,6 +135,10 @@ int main(int argc, char *argv[])
                     c2e_buff.send(val);
                 }
             }
+            auto end = std::chrono::system_clock::now();
+            auto elapsed = end - begin;
+            auto musec = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
+            collector_time.push_back(musec);
         }
     };
 
@@ -137,6 +162,14 @@ int main(int argc, char *argv[])
     }
 
     collect_thr.join();
+
+    auto avg_emitter = std::accumulate(emitter_time.begin(), emitter_time.end(), 0.0) / emitter_time.size();
+    auto avg_worker = std::accumulate(worker_time.begin(), worker_time.end(), 0.0) / worker_time.size();
+    auto avg_collector = std::accumulate(collector_time.begin(), collector_time.end(), 0.0) / collector_time.size();
+
+    std::cout << "Emitter:\t" << avg_emitter << std::endl;
+    std::cout << "Worker:\t" << avg_worker << std::endl;
+    std::cout << "Collector:\t" << avg_collector << std::endl;
 
     // tools::print(vec);
     // assert(std::is_sorted(vec.begin(), vec.end()));
