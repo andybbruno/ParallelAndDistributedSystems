@@ -4,7 +4,7 @@
 #include <cassert>
 #include <random>
 #include <algorithm>
-#include "core/master_worker.cpp"
+#include "core/MaWo.cpp"
 #include "lib/buffer.cpp"
 #include "lib/tools.cpp"
 #include "lib/utimer.cpp"
