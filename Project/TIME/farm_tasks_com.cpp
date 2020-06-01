@@ -3,6 +3,7 @@
 #include <thread>
 #include <cassert>
 #include <algorithm>
+#include <mutex>
 #include "../core/FarmT.cpp"
 #include "../lib/buffer.cpp"
 #include "../lib/tools.cpp"
@@ -39,9 +40,15 @@ int main(int argc, char *argv[])
 
     // tools::print(vec);
 
-    std::vector<long long> e2w_time;
-    std::vector<long long> w2c_time;
-    std::vector<long long> c2e_time;
+    std::mutex e2w_mtx;
+    std::mutex w2c_mtx;
+    std::mutex c2e_mtx;
+    std::vector<long long> e2w_send_time;
+    std::vector<long long> w2c_send_time;
+    std::vector<long long> c2e_send_time;
+    std::vector<long long> e2w_receive_time;
+    std::vector<long long> w2c_receive_time;
+    std::vector<long long> c2e_receive_time;
 
     Farm::Emitter emitter(vec, nw);
     Farm::Worker worker(vec);
@@ -64,7 +71,9 @@ int main(int argc, char *argv[])
                 auto end = std::chrono::system_clock::now();
                 auto elapsed = end - begin;
                 auto musec = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
-                e2w_time.push_back(musec);
+                e2w_mtx.lock();
+                e2w_send_time.push_back(musec);
+                e2w_mtx.unlock();
 
                 turn = (++turn) % nw;
             }
@@ -74,7 +83,9 @@ int main(int argc, char *argv[])
             auto end = std::chrono::system_clock::now();
             auto elapsed = end - begin;
             auto musec = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
-            c2e_time.push_back(musec);
+            c2e_mtx.lock();
+            c2e_receive_time.push_back(musec);
+            c2e_mtx.unlock();
 
             if (res == Farm::RESTART)
             {
@@ -93,7 +104,9 @@ int main(int argc, char *argv[])
             auto end = std::chrono::system_clock::now();
             auto elapsed = end - begin;
             auto musec = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
-            e2w_time.push_back(musec);
+            e2w_mtx.lock();
+            e2w_send_time.push_back(musec);
+            e2w_mtx.unlock();
         }
     };
 
@@ -105,7 +118,9 @@ int main(int argc, char *argv[])
             auto end = std::chrono::system_clock::now();
             auto elapsed = end - begin;
             auto musec = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
-            e2w_time.push_back(musec);
+            e2w_mtx.lock();
+            e2w_receive_time.push_back(musec);
+            e2w_mtx.unlock();
 
             if (job == Farm::EOS)
             {
@@ -114,8 +129,9 @@ int main(int argc, char *argv[])
                 auto end = std::chrono::system_clock::now();
                 auto elapsed = end - begin;
                 auto musec = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
-                w2c_time.push_back(musec);
-
+                w2c_mtx.lock();
+                w2c_send_time.push_back(musec);
+                w2c_mtx.unlock();
                 break;
             }
             auto res = w.compute(job);
@@ -125,7 +141,9 @@ int main(int argc, char *argv[])
             end = std::chrono::system_clock::now();
             elapsed = end - begin;
             musec = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
-            w2c_time.push_back(musec);
+            w2c_mtx.lock();
+            w2c_send_time.push_back(musec);
+            w2c_mtx.unlock();
         }
     };
 
@@ -145,7 +163,9 @@ int main(int argc, char *argv[])
             auto end = std::chrono::system_clock::now();
             auto elapsed = end - begin;
             auto musec = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
-            w2c_time.push_back(musec);
+            w2c_mtx.lock();
+            w2c_receive_time.push_back(musec);
+            w2c_mtx.unlock();
 
             if (res == Farm::EOS)
             {
@@ -165,13 +185,15 @@ int main(int argc, char *argv[])
                     auto end = std::chrono::system_clock::now();
                     auto elapsed = end - begin;
                     auto musec = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
-                    c2e_time.push_back(musec);
+                    c2e_mtx.lock();
+                    c2e_send_time.push_back(musec);
+                    c2e_mtx.unlock();
                 }
             }
         }
     };
 
-    utimer u(std::to_string(nw) + "," + std::to_string(dim));
+    // utimer u(std::to_string(nw) + "," + std::to_string(dim));
 
     std::thread emit_thr(emit, emitter);
 
@@ -192,13 +214,21 @@ int main(int argc, char *argv[])
 
     collect_thr.join();
 
-    auto avg_e2w = std::accumulate(e2w_time.begin(), e2w_time.end(), 0.0) / e2w_time.size();
-    auto avg_w2c = std::accumulate(w2c_time.begin(), w2c_time.end(), 0.0) / w2c_time.size();
-    auto avg_c2e = std::accumulate(c2e_time.begin(), c2e_time.end(), 0.0) / c2e_time.size();
+    auto avg_e2w_send = std::accumulate(e2w_send_time.begin(), e2w_send_time.end(), 0.0) / e2w_send_time.size();
+    auto avg_w2c_send = std::accumulate(w2c_send_time.begin(), w2c_send_time.end(), 0.0) / w2c_send_time.size();
+    auto avg_c2e_send = std::accumulate(c2e_send_time.begin(), c2e_send_time.end(), 0.0) / c2e_send_time.size();
 
-    std::cout << "Emitter 2 Worker:\t" << avg_e2w << std::endl;
-    std::cout << "Worker 2 Collector:\t" << avg_w2c << std::endl;
-    std::cout << "Collector 2 Emitter:\t" << avg_c2e << std::endl;
+    auto avg_e2w_receive = std::accumulate(e2w_receive_time.begin(), e2w_receive_time.end(), 0.0) / e2w_receive_time.size();
+    auto avg_w2c_receive = std::accumulate(w2c_receive_time.begin(), w2c_receive_time.end(), 0.0) / w2c_receive_time.size();
+    auto avg_c2e_receive = std::accumulate(c2e_receive_time.begin(), c2e_receive_time.end(), 0.0) / c2e_receive_time.size();
+
+    std::cout << nw << ",";
+    std::cout << avg_e2w_send << ",";
+    std::cout << avg_e2w_receive << ",";
+    std::cout << avg_w2c_send << ",";
+    std::cout << avg_w2c_receive << ",";
+    std::cout << avg_c2e_send << ",";
+    std::cout << avg_c2e_receive << std::endl;
 
     // tools::print(vec);
     // assert(std::is_sorted(vec.begin(), vec.end()));

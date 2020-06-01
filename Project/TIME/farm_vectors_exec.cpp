@@ -2,6 +2,7 @@
 #include <vector>
 #include <thread>
 #include <cassert>
+#include <mutex>
 #include <algorithm>
 #include "../core/FarmV.cpp"
 #include "../lib/buffer.cpp"
@@ -37,6 +38,10 @@ int main(int argc, char *argv[])
 
     std::vector<int> vec = tools::rand_vec(dim, range);
     // tools::print(vec);
+
+    std::mutex emitter_mtx;
+    std::mutex worker_mtx;
+    std::mutex collector_mtx;
 
     std::vector<long long> emitter_time;
     std::vector<long long> worker_time;
@@ -74,7 +79,9 @@ int main(int argc, char *argv[])
             auto end = std::chrono::system_clock::now();
             auto elapsed = end - begin;
             auto musec = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
+            emitter_mtx.lock();
             emitter_time.push_back(musec);
+            emitter_mtx.unlock();
         }
 
         for (int i = 0; i < nw; i++)
@@ -99,7 +106,9 @@ int main(int argc, char *argv[])
             auto end = std::chrono::system_clock::now();
             auto elapsed = end - begin;
             auto musec = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
+            worker_mtx.lock();
             worker_time.push_back(musec);
+            worker_mtx.unlock();
         }
     };
 
@@ -136,11 +145,13 @@ int main(int argc, char *argv[])
             auto end = std::chrono::system_clock::now();
             auto elapsed = end - begin;
             auto musec = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
+            collector_mtx.lock();
             collector_time.push_back(musec);
+            collector_mtx.unlock();
         }
     };
 
-    utimer u(std::to_string(nw) + "," + std::to_string(dim));
+    // utimer u(std::to_string(nw) + "," + std::to_string(dim));
 
     std::thread emit_thr(emit, emitter);
 
@@ -162,12 +173,13 @@ int main(int argc, char *argv[])
     collect_thr.join();
 
     auto avg_emitter = std::accumulate(emitter_time.begin(), emitter_time.end(), 0.0) / emitter_time.size();
-    auto avg_worker = std::accumulate(worker_time.begin(), worker_time.end(), 0.0) / worker_time.size();
+    auto avg_worker = (std::accumulate(worker_time.begin(), worker_time.end(), 0.0) / worker_time.size()) / nw;
     auto avg_collector = std::accumulate(collector_time.begin(), collector_time.end(), 0.0) / collector_time.size();
 
-    std::cout << "Emitter:\t" << avg_emitter << std::endl;
-    std::cout << "Worker:\t" << avg_worker << std::endl;
-    std::cout << "Collector:\t" << avg_collector << std::endl;
+    std::cout << nw << ",";
+    std::cout << avg_emitter << ",";
+    std::cout << avg_worker << ",";
+    std::cout << avg_collector << std::endl;
 
     // tools::print(vec);
     // assert(std::is_sorted(vec.begin(), vec.end()));
