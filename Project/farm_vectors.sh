@@ -8,7 +8,7 @@ echo ""
 echo ""
 for nw in {1..10}
     do
-    ./farm_vec_main.o $nw 100000 0 1 >> res/farm_vec.txt
+    ./farm_vectors.o $nw 100000 0 1 >> res/farm_vectors.txt
 done
 echo ""
 echo ""

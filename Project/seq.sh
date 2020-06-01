@@ -6,7 +6,7 @@ echo "Start: SEQUENTIAL"
 echo ""
 echo ""
 echo ""
-./seq_main.o $nw 100000 0 1 >> res/seq.txt
+./seq.o $nw 100000 0 1 >> res/seq.txt
 echo ""
 echo ""
 echo ""

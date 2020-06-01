@@ -1,21 +1,22 @@
 CXX 		= g++ 
 FLAGS 		= -O3 -std=c++17 -pthread
 OMPFLAG		= -fopenmp
-FF			= -g  -I spm2020user/fastflow -finline-functions -DNDEBUG
-TARGETS = farm_main farm_vec_main mawo_main omp_main seq_main ff
+FF			= -g -I spm2020user/fastflow -finline-functions -DNDEBUG
+
+TARGETS = seq farm_tasks farm_vectors master_workers openmp fastflow
 
 all		: $(TARGETS)
 
 
-seq_main:
-	$(CXX) $(FLAGS) seq_main.cpp -o seq_main.o
-farm_main:
-	$(CXX) $(FLAGS) farm_main.cpp -o farm_main.o
-farm_vec_main:
-	$(CXX) $(FLAGS) farm_vec_main.cpp -o farm_vec_main.o
-mawo_main:
-	$(CXX) $(FLAGS) mawo_main.cpp -o mawo_main.o
-omp_main:
-	$(CXX) $(FLAGS) omp_main.cpp -o omp_main.o $(OMPFLAG)
-ff:
-	$(CXX) $(FLAGS) ff.cpp -o ff.o $(FF)
+seq:
+	$(CXX) $(FLAGS) seq.cpp -o seq.o
+farm_tasks:
+	$(CXX) $(FLAGS) farm_tasks.cpp -o farm_tasks.o
+farm_vectors:
+	$(CXX) $(FLAGS) farm_vectors.cpp -o farm_vectors.o
+master_workers:
+	$(CXX) $(FLAGS) master_workers.cpp -o master_workers.o
+openmp:
+	$(CXX) $(FLAGS) openmp.cpp -o openmp.o $(OMPFLAG)
+fastflow:
+	$(CXX) $(FLAGS) fastflow.cpp -o fastflow.o $(FF)

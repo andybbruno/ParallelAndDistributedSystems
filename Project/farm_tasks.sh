@@ -2,13 +2,13 @@
 
 echo ""
 echo ""
-echo "Start: MASTER-WORKER"
+echo "Start: FARM"
 echo ""
 echo ""
 echo ""
 for nw in {1..50}
     do
-    ./mawo_main.o $nw 100000 0 1 >> res/mawo.txt
+    ./farm_tasks.o $nw 100000 0 1 >> res/farm_tasks.txt
 done
 echo ""
 echo ""
