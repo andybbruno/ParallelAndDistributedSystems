@@ -1,8 +1,8 @@
 CXX 		= g++ 
 FLAGS 		= -O3 -std=c++17 -pthread
 OMPFLAG		= -fopenmp
-
-TARGETS = farm_main farm_vec_main mawo_main omp_main seq_main
+FF			= -g  -I spm2020user/fastflow -finline-functions -DNDEBUG
+TARGETS = farm_main farm_vec_main mawo_main omp_main seq_main ff
 
 all		: $(TARGETS)
 
@@ -17,3 +17,5 @@ mawo_main:
 	$(CXX) $(FLAGS) mawo_main.cpp -o mawo_main.o
 omp_main:
 	$(CXX) $(FLAGS) omp_main.cpp -o omp_main.o $(OMPFLAG)
+ff:
+	$(CXX) $(FLAGS) ff.cpp -o ff.o $(FF)
