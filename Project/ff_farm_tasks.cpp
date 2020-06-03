@@ -4,7 +4,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <ff/utils.hpp>
-#include <ff/parallel_for.hpp>
+#include <ff/ff.hpp>
 #include "lib/tools.cpp"
 #include "lib/utimer.cpp"
 
@@ -14,9 +14,8 @@ struct Task
 {
     int begin;
     int end;
-    bool &swap;
-
-    Task(int a, int b, bool &swap) : begin(a), end(b), swap(swap) {}
+    bool swap;
+    Task(int a, int b, bool swap) : begin(a), end(b), swap(swap) {}
 
     inline bool operator==(const Task &rhs)
     {
@@ -24,21 +23,24 @@ struct Task
     }
 };
 
-struct Emitter : ff_node_t<bool, Task>
+enum Flag
+{
+    EXIT,
+    RESTART
+};
+
+struct Emitter : ff_node_t<Flag, Task>
 {
     uint curr = 0;
     uint nw = 0;
-    uint received = 0;
     std::vector<std::pair<uint, uint>> ranges_odd;
     std::vector<std::pair<uint, uint>> ranges_even;
     bool even = true;
-    bool swap = true;
 
-    Master(uint n, uint nw) : nw(nw)
+    Emitter(uint n, uint nw) : nw(nw)
     {
         ranges_even = tools::make_ranges(n - 1, nw, 2, 0);
         ranges_odd = tools::make_ranges(n - 1, nw, 2, 1);
-        received = nw;
     };
 
     inline Task *generateTask()
@@ -58,40 +60,18 @@ struct Emitter : ff_node_t<bool, Task>
         }
         curr++;
 
-        return new Task(a, b, swap);
+        return new Task(a, b, false);
     }
 
     inline void restart()
     {
         curr = 0;
         even = !even;
-        received = 0;
-        swap = false;
     }
 
-    Task *svc(bool *exchange)
+    Task *svc(Flag *flag)
     {
-        // std::cout << "MASTER" << std::endl;
-        if (exchange != nullptr)
-        {
-            swap |= *exchange;
-            if (++received == nw)
-            {
-                if ((swap == false) && (even == false))
-                {
-                    return EOS;
-                }
-                else
-                {
-                    for (int i = 0; i < nw; i++)
-                    {
-                        ff_send_out(generateTask());
-                    }
-                    restart();
-                }
-            }
-        }
-        else
+        if (flag == nullptr)
         {
             for (int i = 0; i < nw; i++)
             {
@@ -99,19 +79,30 @@ struct Emitter : ff_node_t<bool, Task>
             }
             restart();
         }
+        else if (*flag == RESTART)
+        {
+            for (int i = 0; i < nw; i++)
+            {
+                ff_send_out(generateTask());
+            }
+            restart();
+        }
+        else if (*flag == EXIT)
+        {
+            return EOS;
+        }
         return GO_ON;
     }
 };
 
-struct Worker : ff_node_t<Task, bool>
+struct Worker : ff_node_t<Task>
 {
     std::vector<int> &vec;
     bool exchange;
 
     Worker(std::vector<int> &vec) : vec(vec) {}
-    bool *svc(Task *t)
+    Task *svc(Task *t)
     {
-        // std::cout << "WORKER" << std::endl;
         bool exchange = false;
         for (int i = t->begin; i <= t->end; i += 2)
         {
@@ -121,7 +112,41 @@ struct Worker : ff_node_t<Task, bool>
                 exchange = true;
             }
         }
-        return new bool(exchange);
+        return t;
+    }
+};
+
+struct Collector : ff_node_t<Task, Flag>
+{
+    bool swap = true;
+    bool even = true;
+    int nw;
+    uint received = 0;
+
+    Collector(int nw) : nw(nw) {}
+
+    Flag *svc(Task *t)
+    {
+        if (t != nullptr)
+        {
+            swap |= t->swap;
+
+            if (++received == nw)
+            {
+                if ((swap == false) && (even == false))
+                {
+                    return new Flag(EXIT);
+                }
+                else
+                {
+                    received = 0;
+                    swap = false;
+                    even = !even;
+                    return new Flag(RESTART);
+                }
+            }
+        }
+        return GO_ON;
     }
 };
 
@@ -153,16 +178,15 @@ int main(int argc, char *argv[])
     }
 
     std::vector<int> vec = tools::rand_vec(dim, range);
-    // tools::print(vec);
-    Master master(dim, nw);
+    Emitter emitter(dim, nw);
+    Collector collector(nw);
     std::vector<std::unique_ptr<ff_node>> W;
     for (size_t i = 0; i < nw; ++i)
     {
         W.push_back(make_unique<Worker>(vec));
     }
 
-    ff_Farm<Task> farm(std::move(W), master);
-    farm.remove_collector();
+    ff_Farm<Task> farm(std::move(W), emitter, collector);
     farm.wrap_around();
 
     utimer u(std::to_string(nw) + "," + std::to_string(dim));
@@ -171,7 +195,7 @@ int main(int argc, char *argv[])
         error("running farm");
         return -1;
     }
-    
+
     // assert(std::is_sorted(vec.begin(), vec.end()));
     return 0;
 }

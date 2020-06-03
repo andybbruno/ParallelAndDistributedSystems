@@ -4,7 +4,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <ff/utils.hpp>
-#include <ff/parallel_for.hpp>
+#include <ff/ff.hpp>
 #include "lib/tools.cpp"
 #include "lib/utimer.cpp"
 
@@ -14,9 +14,9 @@ struct Task
 {
     int begin;
     int end;
-    bool &swap;
+    bool swap;
 
-    Task(int a, int b, bool &swap) : begin(a), end(b), swap(swap) {}
+    Task(int a, int b, bool swap) : begin(a), end(b), swap(swap) {}
 
     inline bool operator==(const Task &rhs)
     {
