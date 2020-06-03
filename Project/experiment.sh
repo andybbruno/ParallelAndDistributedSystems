@@ -64,13 +64,29 @@ echo "Finished!"
 
 echo ""
 echo ""
-echo "Start: FastFlow"
+echo "Start: FastFlow FARM"
 echo ""
 echo ""
 echo ""
 for nw in {1..50}
     do
-    ./fastflow.o $nw 100000 0 1  >> res/fastflow.txt
+    ./fastflow.o $nw 100000 0 1  >> res/ff_farm.txt
+done
+echo ""
+echo ""
+echo ""
+echo "Finished!"
+
+
+echo ""
+echo ""
+echo "Start: FastFlow MASTER-WORKER"
+echo ""
+echo ""
+echo ""
+for nw in {1..50}
+    do
+    ./fastflow.o $nw 100000 0 1  >> res/ff_master.txt
 done
 echo ""
 echo ""

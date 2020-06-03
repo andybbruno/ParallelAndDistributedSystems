@@ -2,7 +2,7 @@
 #include <deque>
 #include <vector>
 #include <iostream>
-#include "MaWo.hpp"
+#include "IMaWo.hpp"
 #include "../lib/tools.cpp"
 
 namespace MaWo

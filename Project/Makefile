@@ -3,7 +3,7 @@ FLAGS 		= -O3 -std=c++17 -pthread
 OMPFLAG		= -fopenmp
 FF			= -I spm2020user/fastflow -finline-functions -DNDEBUG
 
-TARGETS = seq farm_tasks farm_chunks master_workers openmp fastflow
+TARGETS = seq farm_tasks farm_chunks master_workers openmp ff_master_workers ff_farm_tasks
 
 all		: $(TARGETS)
 
@@ -18,5 +18,7 @@ master_workers:
 	$(CXX) $(FLAGS) master_workers.cpp -o master_workers.o
 openmp:
 	$(CXX) $(FLAGS) openmp.cpp -o openmp.o $(OMPFLAG)
-fastflow:
-	$(CXX) $(FLAGS) fastflow.cpp -o fastflow.o $(FF)
+ff_master_workers:
+	$(CXX) $(FLAGS) ff_master_workers.cpp -o ff_master_workers.o $(FF)
+ff_farm_tasks:
+	$(CXX) $(FLAGS) ff_farm_tasks.cpp -o ff_farm_tasks.o $(FF)
