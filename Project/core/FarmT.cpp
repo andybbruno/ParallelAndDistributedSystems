@@ -43,37 +43,9 @@ namespace Farm
     public:
         Emitter(std::vector<int> &vec, uint nw) : nw(nw)
         {
-            // uint delta = vec.size() / nw;
-            // uint mod = vec.size() % nw;
-
-            // for (int i = 0; i < nw; i++)
-            // {
-            //     uint a = (i * delta);
-            //     uint b = a + delta - 1;
-
-            //     ranges.push_back(std::make_pair(a, b));
-            // }
-            // if (mod > 0)
-            // {
-            //     ranges.back().second += mod;
-            // }
-
             auto n = vec.size();
             ranges_even = tools::make_ranges(n - 1, nw, 2, 0);
             ranges_odd = tools::make_ranges(n - 1, nw, 2, 1);
-
-            // for (auto x : ranges_even)
-            // {
-            //     std::cout << x.first << " - " << x.second << "\n";
-            // }
-            // std::cout << "*******" << std::endl;
-            // for (auto x : ranges_odd)
-            // {
-            //     std::cout << x.first << " - " << x.second << "\n";
-            // }
-            // std::cout << std::endl;
-            // std::cout << std::endl;
-            // std::cout << std::endl;
         };
 
         Task next()
@@ -91,20 +63,6 @@ namespace Farm
                 a = ranges_odd[curr].first;
                 b = ranges_odd[curr].second;
             }
-
-            // if (!even)
-            // {
-            //     a++;
-            //     b++;
-            //     if (curr == (ranges.size() - 1))
-            //         b--;
-            // }
-
-            // if (print <= (2 * nw) - 1)
-            // {
-            //     std::cout << a << " - " << b << std::endl;
-            //     --print;
-            // }
 
             curr++;
             return Task(a, b);
@@ -136,29 +94,12 @@ namespace Farm
             std::vector<int> tmp;
             for (int i = t.begin; i <= t.end; i += 2)
             {
-                // tmp.push_back(i);
                 if (vec[i] > vec[i + 1])
                 {
                     std::swap(vec[i], vec[i + 1]);
                     exchange = true;
                 }
             }
-            // mtx.lock();
-            // for (auto z : tmp)
-            // {
-            //     std::cout << z << " - ";
-            // }
-            // std::cout << std::endl;
-            // mtx.unlock();
-
-            // for (int i = t.begin + 1; i < t.end + 1; i += 2)
-            // {
-            //     if (vec[i] > vec[i + 1])
-            //     {
-            //         std::swap(vec[i], vec[i + 1]);
-            //         exchange = true;
-            //     }
-            // }
 
             exchange ? (t.swap = true) : (t.swap = false);
             return t;
@@ -179,8 +120,7 @@ namespace Farm
         {
             swap += t.swap;
             collected++;
-            // std::cout << "swap " << swap << std::endl;
-            // std::cout << "size " << dq.size() << std::endl;
+            
             if ((swap > 0) && (collected == nw))
             {
                 swap = 0;

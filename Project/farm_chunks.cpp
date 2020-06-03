@@ -41,9 +41,9 @@ int main(int argc, char *argv[])
     Farm::Worker worker;
     Farm::Collector collector(vec, nw);
 
-    std::vector<Buffer<Farm::Chunk>> e2w_buff(nw); // emitter to worker buffer
-    std::vector<Buffer<Farm::Chunk>> w2c_buff(nw); // worker to collector buffer
-    Buffer<Farm::C2E_Flag> c2e_buff;              // collector to emitter buffer
+    std::vector<Buffer<Farm::Chunk>> e2w_buff(nw);  // emitter to worker buffer
+    std::vector<Buffer<Farm::Chunk>> w2c_buff(nw);  // worker to collector buffer
+    Buffer<Farm::C2E_Flag> c2e_buff;                // collector to emitter buffer
 
     auto emit = [&](Farm::Emitter e) {
         while (true)
