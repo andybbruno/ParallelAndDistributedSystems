@@ -7,22 +7,22 @@
 
 namespace Farm
 {
-    struct Task
+    struct Chunk
     {
         std::vector<int> *list;
         int begin;
         int end;
         bool swap;
 
-        Task(std::vector<int> *list = nullptr, int a = 0, int b = 0, bool s = false) : list(list), begin(a), end(b) {}
+        Chunk(std::vector<int> *list = nullptr, int a = 0, int b = 0, bool s = false) : list(list), begin(a), end(b) {}
 
-        inline bool operator==(const Task &rhs)
+        inline bool operator==(const Chunk &rhs)
         {
             return (begin == rhs.begin) && (end == rhs.end) && (swap == rhs.swap);
         }
     };
 
-    Task EOS(nullptr, -1, -1, 0);
+    Chunk EOS(nullptr, -1, -1, 0);
 
     enum C2E_Flag
     {
@@ -31,7 +31,7 @@ namespace Farm
         EXIT
     };
 
-    class Emitter : IEmitter<Task>
+    class Emitter : IEmitter<Chunk>
     {
     private:
         std::vector<int> &vec;
@@ -50,7 +50,7 @@ namespace Farm
             ranges_odd = tools::make_ranges(n - 1, nw, 2, 1);
         };
 
-        Task next()
+        Chunk next()
         {
             int a;
             int b;
@@ -72,7 +72,7 @@ namespace Farm
             
 
             auto task_vec = new std::vector<int>(begin, end);
-            return Task(task_vec, a, b);
+            return Chunk(task_vec, a, b);
         }
 
         bool hasNext()
@@ -87,10 +87,10 @@ namespace Farm
         }
     };
 
-    class Worker : IWorker<Task, Task>
+    class Worker : IWorker<Chunk, Chunk>
     {
     public:
-        Task compute(Task &tsk)
+        Chunk compute(Chunk &tsk)
         {
             bool exchange = false;
 
@@ -109,7 +109,7 @@ namespace Farm
         }
     };
 
-    class Collector : ICollector<Task, C2E_Flag>
+    class Collector : ICollector<Chunk, C2E_Flag>
     {
     private:
         std::vector<int> &vec;
@@ -120,7 +120,7 @@ namespace Farm
     public:
         Collector(std::vector<int> &vec, uint nw) : vec(vec), nw(nw) {}
 
-        C2E_Flag collect(Task const &t)
+        C2E_Flag collect(Chunk const &t)
         {
             collected++;
 
