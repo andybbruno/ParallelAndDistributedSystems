@@ -1,7 +1,7 @@
 CXX 		= g++ 
 FLAGS 		= -O3 -std=c++17 -pthread
 OMPFLAG		= -fopenmp
-FF			= -I spm2020user/fastflow -finline-functions -DNDEBUG
+FF			= -I spm2020user/fastflow -finline-functions
 
 TARGETS = seq farm_tasks farm_chunks master_workers openmp ff_master_workers ff_farm_tasks
 

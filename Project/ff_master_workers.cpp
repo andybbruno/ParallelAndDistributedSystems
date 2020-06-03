@@ -77,7 +77,7 @@ struct Master : ff_node_t<bool, Task>
             swap |= *exchange;
             if (++received == nw)
             {
-                if ((swap == false) && (even == false))
+                if (swap == false)
                 {
                     return EOS;
                 }

@@ -71,52 +71,54 @@ struct Emitter : ff_node_t<Flag, Task>
 
     Task *svc(Flag *flag)
     {
-        if (flag == nullptr)
+        if (flag != nullptr)
+        {
+            if (*flag == RESTART)
+            {
+                for (int i = 0; i < nw; i++)
+                {
+                    ff_send_out(generateTask());
+                }
+                restart();
+            }
+            else if (*flag == EXIT)
+            {
+                return EOS;
+            }
+        }
+        else
         {
             for (int i = 0; i < nw; i++)
             {
                 ff_send_out(generateTask());
             }
             restart();
-        }
-        else if (*flag == RESTART)
-        {
-            for (int i = 0; i < nw; i++)
-            {
-                ff_send_out(generateTask());
-            }
-            restart();
-        }
-        else if (*flag == EXIT)
-        {
-            return EOS;
         }
         return GO_ON;
     }
 };
 
-struct Worker : ff_node_t<Task>
+struct Worker : ff_node_t<Task, bool>
 {
     std::vector<int> &vec;
-    bool exchange;
 
     Worker(std::vector<int> &vec) : vec(vec) {}
-    Task *svc(Task *t)
+    bool *svc(Task *t)
     {
-        bool exchange = false;
+        bool exc = false;
         for (int i = t->begin; i <= t->end; i += 2)
         {
             if (vec[i] > vec[i + 1])
             {
                 std::swap(vec[i], vec[i + 1]);
-                exchange = true;
+                exc = true;
             }
         }
-        return t;
+        return new bool(exc);
     }
 };
 
-struct Collector : ff_node_t<Task, Flag>
+struct Collector : ff_node_t<bool, Flag>
 {
     bool swap = true;
     bool even = true;
@@ -125,15 +127,15 @@ struct Collector : ff_node_t<Task, Flag>
 
     Collector(int nw) : nw(nw) {}
 
-    Flag *svc(Task *t)
+    Flag *svc(bool *t)
     {
         if (t != nullptr)
         {
-            swap |= t->swap;
+            swap |= *t;
 
             if (++received == nw)
             {
-                if ((swap == false) && (even == false))
+                if (swap == false)
                 {
                     return new Flag(EXIT);
                 }
@@ -142,10 +144,12 @@ struct Collector : ff_node_t<Task, Flag>
                     received = 0;
                     swap = false;
                     even = !even;
+                    // delete t;
                     return new Flag(RESTART);
                 }
             }
         }
+        // delete t;
         return GO_ON;
     }
 };
@@ -196,6 +200,6 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    // assert(std::is_sorted(vec.begin(), vec.end()));
+    assert(std::is_sorted(vec.begin(), vec.end()));
     return 0;
 }

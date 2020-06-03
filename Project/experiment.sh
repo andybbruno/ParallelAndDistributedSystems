@@ -7,7 +7,7 @@ echo "Start: SEQUENTIAL"
 echo ""
 echo ""
 echo ""
-./seq.o 100000 0 1 >> res/seq.txt
+./seq.o 100000 0 1 > res/seq.txt
 echo ""
 echo ""
 echo ""
@@ -22,7 +22,7 @@ echo ""
 echo ""
 for nw in {1..50}
     do
-    ./farm_tasks.o $nw 100000 0 1 >> res/farm_tasks.txt
+    ./farm_tasks.o $nw 100000 0 1 > res/farm_tasks.txt
 done
 echo ""
 echo ""
@@ -38,7 +38,7 @@ echo ""
 echo ""
 for nw in {1..10}
     do
-    ./farm_vectors.o $nw 100000 0 1 >> res/farm_vectors.txt
+    ./farm_vectors.o $nw 100000 0 1 > res/farm_vectors.txt
 done
 echo ""
 echo ""
@@ -54,7 +54,7 @@ echo ""
 echo ""
 for nw in {1..50}
     do
-    ./master_workers.o $nw 100000 0 1 >> res/master_workers.txt
+    ./master_workers.o $nw 100000 0 1 > res/master_workers.txt
 done
 echo ""
 echo ""
@@ -70,7 +70,7 @@ echo ""
 echo ""
 for nw in {1..50}
     do
-    ./ff_farm_tasks.o $nw 100000 0 1  >> res/ff_farm.txt
+    ./ff_farm_tasks.o $nw 100000 0 1  > res/ff_farm.txt
 done
 echo ""
 echo ""
@@ -86,7 +86,7 @@ echo ""
 echo ""
 for nw in {1..50}
     do
-    ./ff_master_worker.o $nw 100000 0 1  >> res/ff_master.txt
+    ./ff_master_worker.o $nw 100000 0 1  > res/ff_master.txt
 done
 echo ""
 echo ""
@@ -102,7 +102,7 @@ echo ""
 echo ""
 for nw in {1..50}
     do
-    ./openmp.o $nw 100000 0 1 >> res/openmp.txt
+    ./openmp.o $nw 100000 0 1 > res/openmp.txt
 done
 echo ""
 echo ""
