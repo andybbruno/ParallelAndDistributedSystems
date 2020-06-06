@@ -1,5 +1,6 @@
 #!/bin/bash
 
+mkdir res
 
 echo ""
 echo ""

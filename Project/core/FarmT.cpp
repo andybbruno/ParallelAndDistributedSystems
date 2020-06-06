@@ -1,3 +1,9 @@
+/**
+ * @author Andrea Bruno
+ * @brief FARM WITH FEEDBACK + TASKS
+ * @date 06-2020
+ */
+
 #pragma once
 #include <deque>
 #include <vector>
@@ -7,6 +13,10 @@
 
 namespace Farm
 {
+    /**
+     * @brief Task data structure 
+     * 
+     */
     struct Task
     {
         int begin;
@@ -21,8 +31,16 @@ namespace Farm
         }
     };
 
+    /**
+     * @brief End Of Stream. Used to interrupt the computation.
+     * 
+     */
     Task EOS(-1, -1, 0);
 
+    /**
+     * @brief Collector To Emitter communication flags.
+     * 
+     */
     enum C2E_Flag
     {
         CONTINUE,
@@ -30,6 +48,10 @@ namespace Farm
         EXIT
     };
 
+    /**
+     * @brief The Emitter entity of the Farm.
+     * 
+     */
     class Emitter : IEmitter<Task>
     {
     private:
@@ -41,6 +63,12 @@ namespace Farm
         uint print = 0;
 
     public:
+        /**
+         * @brief Construct a new Emitter object. 
+         * 
+         * @param vec the global array
+         * @param nw  number of workers
+         */
         Emitter(std::vector<int> &vec, uint nw) : nw(nw)
         {
             auto n = vec.size();
@@ -48,6 +76,11 @@ namespace Farm
             ranges_odd = tools::make_ranges(n - 1, nw, 2, 1);
         };
 
+        /**
+         * @brief Creates a new Task based on the current phase (Odd/Even). 
+         * 
+         * @return a new Task
+         */
         Task next()
         {
             int a;
@@ -68,11 +101,19 @@ namespace Farm
             return Task(a, b);
         }
 
+        /**
+         * @brief Check if there is something else to produce.
+         * 
+         */
         bool hasNext()
         {
             return curr < nw;
         }
 
+        /**
+         * @brief This function restarts the Emitter. This means that the Emitter will change phase (Odd/Even).
+         * 
+         */
         void restart()
         {
             curr = 0;
@@ -80,13 +121,30 @@ namespace Farm
         }
     };
 
+
+    /**
+     * @brief The Worker entity of the Farm.
+     * 
+     */
     class Worker : IWorker<Task, Task>
     {
     private:
         std::vector<int> &vec;
 
     public:
+        /**
+         * @brief Construct a new Worker object.
+         * 
+         * @param vec the global array.
+         */
         Worker(std::vector<int> &vec) : vec(vec) {}
+
+        /**
+         * @brief Scan every element in the list inside the Task. In case two adjacents elements are out of order, it will swap them.
+         * 
+         * @param t input Task
+         * @return Task output Task
+         */
         Task compute(Task &t)
         {
             bool exchange = false;
@@ -106,6 +164,10 @@ namespace Farm
         }
     };
 
+    /**
+     * @brief The Collector entity of the Farm.
+     * 
+     */
     class Collector : ICollector<Task, C2E_Flag>
     {
     private:
@@ -114,13 +176,24 @@ namespace Farm
         uint collected = 0;
 
     public:
+        /**
+         * @brief Construct a new Collector object
+         * 
+         * @param nw number of workers
+         */
         Collector(uint nw) : nw(nw) {}
 
+        /**
+         * @brief This function collects the Tasks from the Workers and in case either restarts the Emitter or asks to terminate the computation.
+         * 
+         * @param t input Task
+         * @return C2E_Flag communication flags
+         */
         C2E_Flag collect(Task const &t)
         {
             swap += t.swap;
             collected++;
-            
+
             if ((swap > 0) && (collected == nw))
             {
                 swap = 0;

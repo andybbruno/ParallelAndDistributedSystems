@@ -1,3 +1,9 @@
+/**
+ * @author Andrea Bruno
+ * @brief FASTFLOW MASTER-WORKER + TASKS [IMPLEMENTATION]
+ * @date 06-2020
+ */
+
 #include <iostream>
 #include <vector>
 #include <set>
@@ -10,6 +16,10 @@
 
 using namespace ff;
 
+/**
+ * @brief Task data structure
+ * 
+ */
 struct Task
 {
     int begin;
@@ -24,6 +34,10 @@ struct Task
     }
 };
 
+/**
+ * @brief Master entity
+ * 
+ */
 struct Master : ff_node_t<bool, Task>
 {
     uint curr = 0;
@@ -34,6 +48,12 @@ struct Master : ff_node_t<bool, Task>
     bool even = true;
     bool swap = true;
 
+    /**
+     * @brief Construct a new Master object
+     * 
+     * @param n number of elements in the array
+     * @param nw number of workers
+     */
     Master(uint n, uint nw) : nw(nw)
     {
         ranges_even = tools::make_ranges(n - 1, nw, 2, 0);
@@ -41,6 +61,11 @@ struct Master : ff_node_t<bool, Task>
         received = nw;
     };
 
+    /**
+     * @brief Creates a new Task based on the current phase (Odd/Even). 
+     * 
+     * @return Task* a pointer to a new Task
+     */
     inline Task *generateTask()
     {
         int a;
@@ -61,6 +86,10 @@ struct Master : ff_node_t<bool, Task>
         return new Task(a, b, swap);
     }
 
+    /**
+     * @brief This function restarts the Master. This means that the Master will change phase (Odd/Even).
+     * 
+     */
     inline void restart()
     {
         curr = 0;
@@ -69,9 +98,16 @@ struct Master : ff_node_t<bool, Task>
         swap = false;
     }
 
+    /**
+     * @brief FastFlow service function: contains the Master logic.
+     * 
+     * The Master creates new Tasks based on the actual phase. If necessary it stops the computation.
+     * 
+     * @param exchange the eventual swap occured in one Worker
+     * @return Task* a pointer to a new Task
+     */
     Task *svc(bool *exchange)
     {
-        // std::cout << "MASTER" << std::endl;
         if (exchange != nullptr)
         {
             swap |= *exchange;
@@ -103,15 +139,32 @@ struct Master : ff_node_t<bool, Task>
     }
 };
 
+/**
+ * @brief Worker entitiy.
+ * 
+ */
 struct Worker : ff_node_t<Task, bool>
 {
     std::vector<int> &vec;
     bool exchange;
 
+    /**
+     * @brief Construct a new Worker object
+     * 
+     * @param vec the global array
+     */
     Worker(std::vector<int> &vec) : vec(vec) {}
+
+    /**
+     * @brief FastFlow service function: contains the Worker logic.
+     * 
+     * Scan every element in the list inside the Task. In case two adjacents elements are out of order, it will swap them.
+     * 
+     * @param t the input Task
+     * @return true if a swap occurred
+     */
     bool *svc(Task *t)
     {
-        // std::cout << "WORKER" << std::endl;
         bool exchange = false;
         for (int i = t->begin; i <= t->end; i += 2)
         {
@@ -152,8 +205,10 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
+    // Create a random vector
     std::vector<int> vec = tools::rand_vec(dim, range);
-    // tools::print(vec);
+
+    // Create Emitter and Workers
     Master master(dim, nw);
     std::vector<std::unique_ptr<ff_node>> W;
     for (size_t i = 0; i < nw; ++i)
@@ -161,8 +216,13 @@ int main(int argc, char *argv[])
         W.push_back(make_unique<Worker>(vec));
     }
 
+    // Create the Farm
     ff_Farm<Task> farm(std::move(W), master);
+
+    // Since this is a Master-Worker template, we don't need a Collector
     farm.remove_collector();
+
+    // Create a feedback channel
     farm.wrap_around();
 
     utimer u(std::to_string(nw) + "," + std::to_string(dim));
@@ -172,6 +232,11 @@ int main(int argc, char *argv[])
         return -1;
     }
     
+    // !! NOTE !!
+    //
+    // To check that the array is sorted, please remove the comment to the following line.
+    //
+
     // assert(std::is_sorted(vec.begin(), vec.end()));
     return 0;
 }

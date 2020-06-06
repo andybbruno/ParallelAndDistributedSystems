@@ -1,3 +1,9 @@
+/**
+ * @author Andrea Bruno
+ * @brief FASTFLOW FARM WITH FEEDBACK + TASKS [IMPLEMENTATION]
+ * @date 06-2020
+ */
+
 #include <iostream>
 #include <vector>
 #include <set>
@@ -10,6 +16,10 @@
 
 using namespace ff;
 
+/**
+ * @brief Task data structure
+ * 
+ */
 struct Task
 {
     int begin;
@@ -23,12 +33,20 @@ struct Task
     }
 };
 
+/**
+ * @brief Communication flags.
+ * 
+ */
 enum Flag
 {
     EXIT,
     RESTART
 };
 
+/**
+ * @brief Emitter entity
+ * 
+ */
 struct Emitter : ff_node_t<Flag, Task>
 {
     uint curr = 0;
@@ -37,12 +55,23 @@ struct Emitter : ff_node_t<Flag, Task>
     std::vector<std::pair<uint, uint>> ranges_even;
     bool even = true;
 
+    /**
+     * @brief Construct a new Emitter object.
+     * 
+     * @param n number of elements in the array
+     * @param nw number of workers
+     */
     Emitter(uint n, uint nw) : nw(nw)
     {
         ranges_even = tools::make_ranges(n - 1, nw, 2, 0);
         ranges_odd = tools::make_ranges(n - 1, nw, 2, 1);
     };
 
+    /**
+     * @brief Creates a new Task based on the current phase (Odd/Even). 
+     * 
+     * @return Task* a pointer to a new Task
+     */
     inline Task *generateTask()
     {
         int a;
@@ -63,12 +92,24 @@ struct Emitter : ff_node_t<Flag, Task>
         return new Task(a, b, false);
     }
 
+    /**
+     * @brief This function restarts the Emitter. This means that the Emitter will change phase (Odd/Even).
+     * 
+     */
     inline void restart()
     {
         curr = 0;
         even = !even;
     }
 
+    /**
+     * @brief FastFlow service function: contains the Emitter logic.
+     * 
+     * The Emitter creates new Tasks based on the actual phase.
+     * 
+     * @param flag the input flag
+     * @return Task* a pointer to a Task
+     */
     Task *svc(Flag *flag)
     {
         if (flag != nullptr)
@@ -98,11 +139,29 @@ struct Emitter : ff_node_t<Flag, Task>
     }
 };
 
+/**
+ * @brief Worker entitiy.
+ * 
+ */
 struct Worker : ff_node_t<Task, bool>
 {
     std::vector<int> &vec;
 
+    /**
+     * @brief Construct a new Worker object.
+     * 
+     * @param vec the global array
+     */
     Worker(std::vector<int> &vec) : vec(vec) {}
+
+    /**
+     * @brief FastFlow service function: contains the Worker logic.
+     * 
+     * Scan every element in the list inside the Task. In case two adjacents elements are out of order, it will swap them.
+     * 
+     * @param t the input Task
+     * @return true if a swap occurred
+     */
     bool *svc(Task *t)
     {
         bool exc = false;
@@ -118,6 +177,10 @@ struct Worker : ff_node_t<Task, bool>
     }
 };
 
+/**
+ * @brief Collector entity
+ * 
+ */
 struct Collector : ff_node_t<bool, Flag>
 {
     bool swap = true;
@@ -125,8 +188,21 @@ struct Collector : ff_node_t<bool, Flag>
     int nw;
     uint received = 0;
 
+    /**
+     * @brief Construct a new Collector object
+     * 
+     * @param nw number of workers
+     */
     Collector(int nw) : nw(nw) {}
 
+    /**
+     * @brief FastFlow service function: contains the Collector logic.
+     * 
+     * This function collects the Tasks from the Workers and in case either restarts the Emitter or asks to terminate the computation.
+     * 
+     * @param t the input Task
+     * @return Flag* a pointer to a Flag used to communicate with the Emitter
+     */
     Flag *svc(bool *t)
     {
         if (t != nullptr)
@@ -144,12 +220,10 @@ struct Collector : ff_node_t<bool, Flag>
                     received = 0;
                     swap = false;
                     even = !even;
-                    // delete t;
                     return new Flag(RESTART);
                 }
             }
         }
-        // delete t;
         return GO_ON;
     }
 };
@@ -181,7 +255,10 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
+    // Create a random vector
     std::vector<int> vec = tools::rand_vec(dim, range);
+
+    // Create Emitter, Workers and Collector
     Emitter emitter(dim, nw);
     Collector collector(nw);
     std::vector<std::unique_ptr<ff_node>> W;
@@ -190,7 +267,10 @@ int main(int argc, char *argv[])
         W.push_back(make_unique<Worker>(vec));
     }
 
+    // Create the Farm 
     ff_Farm<Task> farm(std::move(W), emitter, collector);
+
+    // Add a feedback channel
     farm.wrap_around();
 
     utimer u(std::to_string(nw) + "," + std::to_string(dim));
@@ -200,6 +280,11 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    assert(std::is_sorted(vec.begin(), vec.end()));
+    // !! NOTE !!
+    //
+    // To check that the array is sorted, please remove the comment to the following line.
+    //
+
+    // assert(std::is_sorted(vec.begin(), vec.end()));
     return 0;
 }
