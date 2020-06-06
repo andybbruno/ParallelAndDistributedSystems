@@ -2,7 +2,6 @@
 .DS_Store
 *.o
 .vscode/settings.json
-succinct
 Assignment/DivideAndConquer/OLD
 Assignment/OpenCVFilters/res
 Assignment/OpenCVFilters/img
@@ -10,3 +9,5 @@ Assignment/OpenCVFilters/_old
 Assignment/FFCompressor/DATASET
 Assignment/FFCompressor/BIG
 Assignment/FFCompressor/miniz
+.vscode
+Project/OLD
