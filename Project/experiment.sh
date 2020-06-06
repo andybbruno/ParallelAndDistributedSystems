@@ -17,7 +17,7 @@ echo "Finished!"
 
 echo ""
 echo ""
-echo "Start: FARM"
+echo "Start: FARM WITH TASKS"
 echo ""
 echo ""
 echo ""
@@ -33,13 +33,13 @@ echo "Finished!"
 
 echo ""
 echo ""
-echo "Start: FARM WITH VECTORS"
+echo "Start: FARM WITH CHUNKS"
 echo ""
 echo ""
 echo ""
-for nw in {1..10}
+for nw in {1..50}
     do
-    ./farm_vectors.o $nw 100000 0 1 > res/farm_vectors.txt
+    ./farm_chunks.o $nw 100000 0 1 > res/farm_chunks.txt
 done
 echo ""
 echo ""
