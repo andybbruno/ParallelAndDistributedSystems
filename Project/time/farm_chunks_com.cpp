@@ -4,7 +4,7 @@
 #include <cassert>
 #include <mutex>
 #include <algorithm>
-#include "../core/FarmV.cpp"
+#include "../core/FarmC.cpp"
 #include "../lib/buffer.cpp"
 #include "../lib/tools.cpp"
 #include "../lib/utimer.cpp"
@@ -53,8 +53,8 @@ int main(int argc, char *argv[])
     Farm::Worker worker;
     Farm::Collector collector(vec, nw);
 
-    std::vector<Buffer<Farm::Task>> e2w_buff(nw); // emitter to worker buffer
-    std::vector<Buffer<Farm::Task>> w2c_buff(nw); // worker to collector buffer
+    std::vector<Buffer<Farm::Chunk>> e2w_buff(nw); // emitter to worker buffer
+    std::vector<Buffer<Farm::Chunk>> w2c_buff(nw); // worker to collector buffer
     Buffer<Farm::C2E_Flag> c2e_buff;              // collector to emitter buffer
 
     auto emit = [&](Farm::Emitter e) {
