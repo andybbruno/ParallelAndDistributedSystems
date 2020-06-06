@@ -6,7 +6,16 @@
 #include <numeric>
 
 namespace tools
-{
+{   
+    /**
+     * @brief Creates a list of pairs. Each pair contains the start and the end of each range.
+     * 
+     * @param dim size of the sequence
+     * @param nw number of workers
+     * @param step_size the size of the jump at each iteration
+     * @param odd true measn odd phase
+     * @return std::vector<std::pair<uint, uint>> a list of pairs.
+     */
     std::vector<std::pair<uint, uint>> make_ranges(uint dim, uint nw, uint step_size = 1, uint odd = false)
     {
         std::vector<std::pair<uint, uint>> ranges;
@@ -48,6 +57,13 @@ namespace tools
         return ranges;
     }
 
+    /**
+     * @brief Creates a random vector 
+     * 
+     * @param n the size of the vector
+     * @param limit the range 
+     * @return std::vector<int> a vector containing random items in (-limit , limit)
+     */
     std::vector<int> rand_vec(size_t n, int limit)
     {
         std::vector<int> vec;
@@ -58,6 +74,13 @@ namespace tools
         return vec;
     }
 
+    /**
+     * @brief Print a vector of integers
+     * 
+     * Used during debugging
+     * 
+     * @param vec the input vector
+     */
     void print(std::vector<int> &vec)
     {
         std::cout << "\n";

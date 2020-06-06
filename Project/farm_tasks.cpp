@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
             // compute the assigned #job
             auto res = w.compute(job);
 
-            // send to the collector
+            // send to the Collector
             w2c_buff[wid].send(res);
         }
     };

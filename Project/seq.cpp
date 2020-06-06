@@ -1,3 +1,9 @@
+/**
+ * @author Andrea Bruno
+ * @brief ODD-EVEN SORT SEQUENTIAL [IMPLEMENTATION]
+ * @date 06-2020
+ */
+
 #include <iostream>
 #include <vector>
 #include <cassert>
@@ -54,16 +60,24 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
+    // Create a random vector
     std::vector<int> vec = tools::rand_vec(dim, range);
 
     auto begin = std::chrono::system_clock::now();
+    
+    // Start the algorithm
     odd_even_sort(vec);
+    
     auto end = std::chrono::system_clock::now();
     auto elapsed = end - begin;
     auto musec = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
     std::cout << musec << std::endl;
-    // tools::print(vec);
-    // assert(std::is_sorted(vec.begin(), vec.end()));
 
+    // !! NOTE !!
+    //
+    // To check that the array is sorted, please remove the comment to the following line.
+    //
+
+    // assert(std::is_sorted(vec.begin(), vec.end()));
     return 0;
 }
