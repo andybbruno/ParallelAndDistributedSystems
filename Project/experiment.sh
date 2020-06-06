@@ -87,7 +87,7 @@ echo ""
 echo ""
 for nw in {1..50}
     do
-    ./ff_master_worker.o $nw 100000 0 1  > res/ff_master.txt
+    ./ff_master_workers.o $nw 100000 0 1  > res/ff_master.txt
 done
 echo ""
 echo ""
