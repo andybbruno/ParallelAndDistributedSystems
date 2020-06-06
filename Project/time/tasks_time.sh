@@ -1,5 +1,7 @@
 #!/bin/bash
 
+mkdir res
+
 echo ""
 echo ""
 echo "Start: FARM with TASKS (EXECUTION TIME)"
@@ -8,7 +10,7 @@ echo ""
 echo ""
 for nw in {1..10}
     do
-    ./farm_tasks_com.o $nw 100000 0 1 >> res/farm_tasks_com.txt
+    ./farm_tasks_com.o $nw 100000 0 1 > res/farm_tasks_com.txt
 done
 echo ""
 echo ""
@@ -24,7 +26,7 @@ echo ""
 echo ""
 for nw in {1..10}
     do
-    ./farm_tasks_exec.o $nw 100000 0 1 >> res/farm_tasks_exec.txt
+    ./farm_tasks_exec.o $nw 100000 0 1 > res/farm_tasks_exec.txt
 done
 echo ""
 echo ""
